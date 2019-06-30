@@ -17,6 +17,7 @@ import os
 import re
 import datetime
 import socket
+from pytz import timezone
 
 API_TOKEN = os.getenv('TOKEN')
 
@@ -27,7 +28,7 @@ modo = os.getenv('MODO')
 shod_key1 = os.getenv('SHODAN_1')
 shod_key2 = os.getenv('SHODAN_2')
 
-shodan_keys = []
+shodan_keys = ['']
 
 shodan_keys.append(shod_key1)
 shodan_keys.append(shod_key2)
@@ -36,7 +37,7 @@ shodan_keys.append(shod_key2)
 canal = ['https://t.me/AcervoDoSam', '@AcervoDoSam']
 ####
 
-Excecoes = ['']
+Excecoes = ['804801117'] #suporte
 
 logging.basicConfig(level=logging.INFO)
 
@@ -80,7 +81,7 @@ def saiu(bot, update):
 			bot_id=m.id,
 			group_name=update.message.chat.title,
 			group_id=update.message.chat.id,
-			data=datetime.datetime.now().strftime('%I:%M %d %B, %Y'))
+			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%I:%M %d %B, %Y'))
 
 			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_out)
 		else:
@@ -93,7 +94,7 @@ def saiu(bot, update):
 			user_id=m.id,
 			group_name=update.message.chat.title,
 			group_id=update.message.chat.id,
-			data=datetime.datetime.now().strftime('%I:%M %d %B, %Y'))
+			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%I:%M %d %B, %Y'))
 
 			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=user_out)
 
@@ -119,7 +120,7 @@ def bvindas(bot, update):
 		bot_id=m.id,
 		group_name=update.message.chat.title,
 		group_id=update.message.chat.id,
-		data=datetime.datetime.now().strftime('%I:%M %d %B, %Y'))
+		data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%I:%M %d %B, %Y'))
 
 				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_entry)
 			else: pass
@@ -136,7 +137,7 @@ def bvindas(bot, update):
 		user_id=m.id,
 		group_name=update.message.chat.title,
 		group_id=update.message.chat.id,
-		data=datetime.datetime.now().strftime('%I:%M %d %B, %Y'))
+		data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%I:%M %d %B, %Y'))
 
 			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=user_entry)
 
