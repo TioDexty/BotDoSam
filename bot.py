@@ -63,7 +63,7 @@ def check_adm(user_id, admin_list):
 @run_async
 def bvindas(bot, update):
 	for m in update.message.new_chat_members:
-		boasvindas = '<b>Olá, {}. Bem-vindo(a) ao, {}.</b>'.format(m.first_name, update.message.chat.title)
+		boasvindas = '<b>Olá, {}. Bem-vindo(a) ao {}.</b>'.format(m.first_name, update.message.chat.title)
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=boasvindas)	
 
 def info(bot, update):
@@ -341,5 +341,6 @@ def main():
 	dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, bvindas))
 	
 	rodar(updater)
+
 if __name__ == '__main__':
 	main()
