@@ -2,3 +2,4 @@ python-telegram-bot==11.1.0
 requests==2.22.0
 shodan==1.13.0
 pytz==2019.1
+nudepy==0.4
