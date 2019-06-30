@@ -72,7 +72,11 @@ def check_adm(user_id, admin_list):
 @run_async
 def check_nude(bot, update):
 	foto = bot.get_file(update.message.photo[-1].file_id)
-	print(foto)
+
+	js = json.dumps(foto)
+	bs = json.loads(js)
+
+	foto = bs['file_path']
 
 	r = requests.get(foto, stream=True)
 	foto = foto.split('/')[-1]
