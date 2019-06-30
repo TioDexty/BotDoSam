@@ -5,6 +5,7 @@
 #@GrupoDoSam
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram.ext.dispatcher import run_async
 from telegram.error import NetworkError, Unauthorized, BadRequest
 import logging
 import requests
@@ -59,6 +60,7 @@ def check_adm(user_id, admin_list):
 			return True
 	return False
 
+@run_async
 def bvindas(bot, update):
 	for m in update.message.new_chat_members:
 		boasvindas = '<b>Olá, {}. Bem-vindo(a) ao, {}.</b>'.format(m.first_name, update.message.chat.title)
@@ -102,7 +104,6 @@ def link(bot, update):
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Erro: </b>{}\n\nTalvez eu precise de permissões de administrador para executar este comando.'.format(e), reply_to_message_id=update.message.message_id)
 
 def gp(bot, update):
-
 	msg = """
 <b>Informações atuais do grupo</b>
 
