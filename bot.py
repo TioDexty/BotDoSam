@@ -267,6 +267,7 @@ def ajuda(bot, update):
 /ajuda - Envia a lista de comandos para ajuda
 /info - Envia informações sobre o bot
 /link - Envia link do grupo e do canal
+/emailrep - Recolhe informações básicas de um endereço de email
 
 <b>Apenas administrador ou moderador</b>
 /k ou /kick - Remove o usuário alvo do grupo
@@ -328,6 +329,74 @@ def pin(bot, update):
 	else:
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
 
+def emailrep(bot, update, args):
+	#usa a API do emailrep para conseguir a reputação de um e-mail
+
+	r = requests.get('https://emailrep.io/' + args[0])
+	js = json.loads(r.text)
+
+	carregando = '''
+<b>Conseguindo reputação do e-mail </b>{} <b>.</b>
+
+<b>Por favor, aguarde.</b>'''.format(args[0])
+
+	bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=carregando, reply_to_message_id=update.message.message_id)
+
+	####
+
+	emailrep_text = '''
+<b>E-mail: </b>{email}
+<b>Reputação: </b>{rep}
+<b>Suspeitas: </b>{suspicious}
+<b>Referências: </b>{references}
+
+<b>Detalhes: </b>
+	<b>Atividade maliciosa: </b>{activity}
+	<b>Atividade maliciosa recente: </b>{recent_activity}
+	<b>Credenciais vazadas: </b>{credentials}
+	<b>Violação de dados: </b>{data_breach}
+	<b>Visto pela última vez: </b>{last_seen}
+	<b>Existe domínio: </b>{domain_exists}
+	<b>Reputação de domínio: </b>{domain_rep}
+	<b>Domínio novo: </b>{new_domain}
+	<b>Dias desde criação de domínio: </b>{days}
+	<b>TLD suspeito: </b>{suspicious_tld}
+	<b>Spam: </b>{spam}
+	<b>Provedor de graça: </b>{free_prov}
+	<b>Descartável: </b>{disp}
+	<b>MX válido: </b>{valid_mx}
+	<b>Falsificável: </b>{spoofable}
+	<b>SPF estrito: </b>{spf}
+	<b>Dmarc reforçado: </b>{dmarc}
+
+<b>Perfis:</b>
+'''.format(email=args[0],
+		rep=j['reputation'],
+		suspicious=j['suspicious'],
+		references=j['references'],
+			activity=j['details']['malicious_activity'],
+			recent_activity=j['details']['malicious_activity_recent'],
+			credentials=j['details']['credentials_leaked'],
+			data_breach=j['details']['data_breach'],
+			last_seen=j['details']['last_seen'],
+			domain_exists=j['details']['domain_exists'],
+			domain_rep=j['details']['domain_reputation'],
+			new_domain=j['details']['new_domain'],
+			days=j['details']['days_since_domain_creation'],
+			suspicious_tld=j['details']['suspicious_tld'],
+			spam=j['details']['spam'],
+			free_prov=j['details']['free_provider'],
+			disp=j['details']['disposable'],
+			valid_mx=j['details']['valid_mx'],
+			spoofable=j['details']['spoofable'],
+			spf=j['details']['spf_strict'],
+			dmarc=j['details']['dmarc_enforced'])
+
+	for perfil in js['details']['profiles']:
+		emailrep_text += '<b>{}</b>'.format(perfil)
+
+	bot.edit_message_text(parse_mode='HTML', chat_id=update.message.chat_id, message_id=msg.message_id, text=emailrep_text)
+
 def main():
 	updater = Updater(token=API_TOKEN)
 	dispatcher = updater.dispatcher
@@ -346,6 +415,7 @@ def main():
 	dispatcher.add_handler(CommandHandler('b', banir))
 	dispatcher.add_handler(CommandHandler('pin', pin))
 	dispatcher.add_handler(CommandHandler('p', pin))
+	dispatcher.add_handler(CommandHandler('emailrep', emailrep, pass_args=True))
 
 	# mensagem de boas vindas
 	dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, bvindas))
