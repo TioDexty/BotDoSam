@@ -333,7 +333,7 @@ def emailrep(bot, update, args):
 	#usa a API do emailrep para conseguir a reputação de um e-mail
 
 	r = requests.get('https://emailrep.io/' + args[0])
-	js = json.loads(r.text)
+	j = json.loads(r.text)
 
 	carregando = '''
 <b>Conseguindo reputação do e-mail </b>{} <b>.</b>
