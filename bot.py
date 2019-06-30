@@ -39,7 +39,7 @@ if modo == 'dev':
 		updater.idle()
 
 elif modo == 'prod':
-	def run(updater):
+	def rodar(updater):
 		PORTA = int(os.environ.get('PORT', '8443'))
 		HEROKU_NOME = os.environ.get3('HEROKU_APP_NAME')
 
