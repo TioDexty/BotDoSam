@@ -332,6 +332,7 @@ def ajuda(bot, update):
 /info - Envia informações sobre o bot
 /link - Envia link do grupo e do canal
 /emailrep - Recolhe informações básicas de um endereço de email
+/s ou /salvar - Envia a mensagem escolhida para o seu pv
 
 <b>Apenas administrador ou moderador</b>
 /k ou /kick - Remove o usuário alvo do grupo
@@ -393,7 +394,12 @@ def pin(bot, update):
 	else:
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
 
+def salvar(bot, update):
+	#salvar mensagem
+	user_link = update.message.from_user.link
+	user_id = update.message.from_user.id
 
+	bot.forward_message(chat_id=user_id, from_chat_id=update.message.chat_id, message_id=update.message.reply_to_message.message_id)
 
 def emailrep(bot, update, args):
 	#usa a API do emailrep para conseguir a reputação de um e-mail
@@ -486,6 +492,8 @@ def main():
 	dispatcher.add_handler(CommandHandler('b', banir))
 	dispatcher.add_handler(CommandHandler('pin', pin))
 	dispatcher.add_handler(CommandHandler('p', pin))
+	dispatcher.add_handler(CommandHandler('salvar', salvar))
+	dispatcher.add_handler(CommandHandler('s', salvar))
 	dispatcher.add_handler(CommandHandler('emailrep', emailrep, pass_args=True))
 
 	# mensagem de boas vindas
