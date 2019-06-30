@@ -18,6 +18,8 @@ import re
 import datetime
 import socket
 from pytz import timezone
+import nude
+from nude import Nude
 
 API_TOKEN = os.getenv('TOKEN')
 
@@ -66,6 +68,24 @@ def check_adm(user_id, admin_list):
 			return True
 	return False
 
+@run_async
+def check_nude(bot, update):
+	foto = bot.get_file(update.message.photo[-1].file_id)
+	filename = foto.file_id
+
+	if nude.is_nude(str(foto)) == True:
+		alvo_id = update.message.reply_to_message.from_user.id
+		alvo_usuario = update.message.reply_to_message.from_user.username
+		alvo_nome = update.message.reply_to_message.from_user.first_name
+
+		if alvo_usuario == None:
+			banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_nome, alvo_id)
+		else:
+			banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_usuario, alvo_id)
+
+		bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
+		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=banido, reply_to_message_id=update.message.message_id)
+	else: pass
 @run_async
 def saida(bot, update):
 	m = update.message.left_chat_member
@@ -503,6 +523,9 @@ def main():
 	# saida
 	dispatcher.add_handler(MessageHandler(Filters.status_update.left_chat_member, saida))
 	
+	# filtrar imagens
+	dispatcher.add_handler(MessageHandler(Filters.photo, check_nude))
+
 	rodar(updater)
 
 if __name__ == '__main__':
