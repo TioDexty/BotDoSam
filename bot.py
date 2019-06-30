@@ -46,8 +46,8 @@ elif modo == 'prod':
 
 		updater.start_webhook(listen='0.0.0.0',
 								port=PORTA,
-								url_path=TOKEN)
-		updater.bot.set_webhook('https://{}.herokuapp.com/{}'.format(HEROKU_NOME, TOKEN))
+								url_path=API_TOKEN)
+		updater.bot.set_webhook('https://{}.herokuapp.com/{}'.format(HEROKU_NOME, API_TOKEN))
 else:
 	logger.error('MODO NÃO ESPECIFICADO')
 	sys.exit()
