@@ -33,6 +33,8 @@ shodan_keys.append(shod_key2)
 canal = ['https://t.me/AcervoDoSam', '@AcervoDoSam']
 ####
 
+Excecoes = ['']
+
 logging.basicConfig(level=logging.INFO)
 
 if modo == 'dev':
@@ -66,11 +68,13 @@ def bvindas(bot, update):
 		alvo_id = m.id
 
 		if m.is_bot == True:
-			bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
-			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Bot {} removido.</b>'.format(alvo_id))
-
-		boasvindas = '<b>Olá, {}. Bem-vindo(a) ao {}.</b>'.format(m.full_name, update.message.chat.title)
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=boasvindas)	
+			if alvo_id is not in Excecoes:
+				bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
+				bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Bot {} removido.</b>'.format(alvo_id))
+			else: pass
+		else:
+			boasvindas = '<b>Olá, {}. Bem-vindo(a) ao {}.</b>'.format(m.full_name, update.message.chat.title)
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=boasvindas)	
 
 def info(bot, update):
 	info_txt = """
