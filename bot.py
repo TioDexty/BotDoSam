@@ -72,10 +72,9 @@ def check_adm(user_id, admin_list):
 @run_async
 def check_nude(bot, update):
 	foto = bot.get_file(update.message.photo[-1].file_id)
-	arq_foto = os.path.join('downloads', '{}.jpg'.format(foto.file_id))
-	foto.download(arq_foto)
+	foto.download()
 
-	if nude.is_nude(str(arq_foto)) == True:
+	if nude.is_nude(str(foto)) == True:
 		alvo_id = update.message.reply_to_message.from_user.id
 		alvo_usuario = update.message.reply_to_message.from_user.username
 		alvo_nome = update.message.reply_to_message.from_user.first_name
