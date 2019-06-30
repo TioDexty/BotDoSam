@@ -121,13 +121,11 @@ def info(bot, update):
 
 def admin(bot, update):
 	try:
-		admins = bot.get_chat_administrators(chat_id=update.message.chat_id)
+		for adm in bot.get_chat_administrators(chat_id=update.message.chat_id):
+			adm_username = adm.user
 
-		msg = """
-Administradores:
-
-{}""".format(admins)
-		print(bot.get_chat_administrators(chat_id=update.message.chat_id))
+			msg = '<b>Administrador(es)</b>\n\n'
+			msg += '<b>{}</b>'.format(adm_username)
 
 		bot.send_message(chat_id=update.message.chat_id, text=msg, reply_to_message_id=update.message.message_id)
 	except BadRequest as e:
