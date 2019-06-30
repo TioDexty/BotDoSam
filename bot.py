@@ -67,38 +67,6 @@ def check_adm(user_id, admin_list):
 	return False
 
 @run_async
-def saiu(bot, update):
-	m = update.message.left_chat_member
-
-	if m is not None:
-		if m.is_bot == True:
-			bot_out = '''
-#SAIDA_BOT
-<b>De:</b> {bot_name} [{bot_id}]
-<b>Grupo:</b> {group_name} [{group_id}]
-<b>Data:</b> {data}
-	'''.format(bot_name=m.full_name,
-			bot_id=m.id,
-			group_name=update.message.chat.title,
-			group_id=update.message.chat.id,
-			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%I:%M %d %B, %Y'))
-
-			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_out)
-		else:
-			user_out = '''
-#SAIDA_USUARIO
-<b>De:</b> {user_name} [{user_id}]
-<b>Grupo:</b> {group_name} [{group_id}]
-<b>Data:</b> {data}
-	'''.format(user_name=m.full_name,
-			user_id=m.id,
-			group_name=update.message.chat.title,
-			group_id=update.message.chat.id,
-			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%I:%M %d %B, %Y'))
-
-			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=user_out)
-
-@run_async
 def bvindas(bot, update):
 	for m in update.message.new_chat_members:
 		alvo_id = m.id
@@ -120,7 +88,7 @@ def bvindas(bot, update):
 		bot_id=m.id,
 		group_name=update.message.chat.title,
 		group_id=update.message.chat.id,
-		data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%I:%M %d %B, %Y'))
+		data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'))
 
 				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_entry)
 			else: pass
@@ -137,7 +105,7 @@ def bvindas(bot, update):
 		user_id=m.id,
 		group_name=update.message.chat.title,
 		group_id=update.message.chat.id,
-		data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%I:%M %d %B, %Y'))
+		data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'))
 
 			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=user_entry)
 
