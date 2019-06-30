@@ -14,7 +14,7 @@ import random
 import sys
 import os
 import re
-import sockets
+import socket
 
 API_TOKEN = os.getenv('TOKEN')
 
