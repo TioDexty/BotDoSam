@@ -18,8 +18,6 @@ import re
 import datetime
 import socket
 
-from bs4 import BeautifulSoup as bs
-
 API_TOKEN = os.getenv('TOKEN')
 
 REG_GROUP = os.getenv('REGISTER')
