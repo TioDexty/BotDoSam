@@ -345,6 +345,11 @@ def emailrep(bot, update, args):
 	####
 
 	emailrep_text = '''
+<b>High</b> - Alta
+<b>Medium</b> - Média
+<b>Low</b> - Baixa
+<b>None</b> - Nenhuma
+
 <b>E-mail: </b>{email}
 <b>Reputação: </b>{rep}
 <b>Suspeitas: </b>{suspicious}
@@ -393,7 +398,7 @@ def emailrep(bot, update, args):
 			dmarc=j['details']['dmarc_enforced'])
 
 	for perfil in j['details']['profiles']:
-		emailrep_text += '<b>{}</b>'.format(perfil)
+		emailrep_text += '<code>{}</code>\n'.format(perfil)
 
 	bot.edit_message_text(parse_mode='HTML', chat_id=update.message.chat_id, message_id=msg.message_id, text=emailrep_text)
 
