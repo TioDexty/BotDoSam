@@ -392,7 +392,7 @@ def emailrep(bot, update, args):
 			spf=j['details']['spf_strict'],
 			dmarc=j['details']['dmarc_enforced'])
 
-	for perfil in js['details']['profiles']:
+	for perfil in j['details']['profiles']:
 		emailrep_text += '<b>{}</b>'.format(perfil)
 
 	bot.edit_message_text(parse_mode='HTML', chat_id=update.message.chat_id, message_id=msg.message_id, text=emailrep_text)
