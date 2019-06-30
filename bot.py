@@ -73,7 +73,7 @@ def check_adm(user_id, admin_list):
 def check_nude(bot, update):
 	foto = bot.get_file(update.message.photo[-1].file_id)
 
-	js = json.dumps(foto)
+	js = json.dumps(str(foto))
 	bs = json.loads(js)
 
 	foto = bs['file_path']
@@ -95,8 +95,20 @@ def check_nude(bot, update):
 		else:
 			banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_usuario, alvo_id)
 
+		banido_usuario = '''
+#BANIDO_USUARIO
+<b>Usuário: </b>{user_name} [{user_id}]
+<b>Grupo: </b>{group_name} [{group_id}]
+<b>Data: </b>{data}
+'''.format(user_name=m.full_name,
+		user_id=m.id,
+		group_name=update.message.chat.title,
+		group_id=update.message.chat.id,
+		data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'))
+
 		bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=banido, reply_to_message_id=update.message.message_id)
+		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=banido_usuario)
 	else: pass
 @run_async
 def saida(bot, update):
