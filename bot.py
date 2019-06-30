@@ -71,15 +71,11 @@ def check_adm(user_id, admin_list):
 
 @run_async
 def check_nude(bot, update):
-	foto = bot.get_file(update.message.photo[-1].file_path)
-	r = requests.get(foto, stream=True)
-	foto = foto.split('/')[-1]
+	foto = bot.get_file(update.message.photo[-1].file_id)
+	arq_foto = os.path.join('downloads', '{}.jpg'.format(foto.file_id))
+	foto.download(arq_foto)
 
-	with open(foto, 'wb') as fo:
-		shutil.copyfileobj(r.raw, fo)
-	del r
-
-	if nude.is_nude(str(foto)) == True:
+	if nude.is_nude(str(arq_foto)) == True:
 		alvo_id = update.message.reply_to_message.from_user.id
 		alvo_usuario = update.message.reply_to_message.from_user.username
 		alvo_nome = update.message.reply_to_message.from_user.first_name
