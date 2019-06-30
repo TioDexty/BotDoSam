@@ -63,6 +63,12 @@ def check_adm(user_id, admin_list):
 @run_async
 def bvindas(bot, update):
 	for m in update.message.new_chat_members:
+		alvo_id = m.from_user.id
+
+		if m.is_bot == True:
+			bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Bot removido.</b>')
+
 		boasvindas = '<b>Olá, {}. Bem-vindo(a) ao {}.</b>'.format(m.first_name, update.message.chat.title)
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=boasvindas)	
 
@@ -262,18 +268,9 @@ def ajuda(bot, update):
 /k ou /kick - Remove o usuário alvo do grupo
 /b ou /ban - Bane o usuário alvo do grupo
 /p ou /pin - Fixa uma mensagem escolhida
-/a ou /acervo - Encaminha a mensagem escolhida pro Canal do Sam
 """
 
 	bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=ajuda, reply_to_message_id=update.message.message_id)
-
-def acervo(bot, update):
-	admin_list = bot.get_chat_administrators(chat_id=update.message.chat_id)
-	user_id = update.message.from_user.id
-
-	if check_adm(user_id=user_id, admin_list=admin_list) == True:
-		# envia o conteúdo pro acervo
-		bot.send_message(chat_id='@AcervoDoSam', message_id=update.message.reply_to_message.message_id)
 
 def expulsar(bot, update):
 	#expulsar alvo do grupo
@@ -345,7 +342,6 @@ def main():
 	dispatcher.add_handler(CommandHandler('b', banir))
 	dispatcher.add_handler(CommandHandler('pin', pin))
 	dispatcher.add_handler(CommandHandler('p', pin))
-	dispatcher.add_handler(CommandHandler('acervo', acervo))
 
 	# mensagem de boas vindas
 	dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, bvindas))
