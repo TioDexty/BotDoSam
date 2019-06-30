@@ -68,7 +68,7 @@ def bvindas(bot, update):
 		alvo_id = m.id
 
 		if m.is_bot == True:
-			if alvo_id is not in Excecoes:
+			if alvo_id not in Excecoes:
 				bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
 				bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Bot {} removido.</b>'.format(alvo_id))
 			else: pass
