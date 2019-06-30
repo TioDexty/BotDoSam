@@ -15,9 +15,14 @@ import random
 import sys
 import os
 import re
+import datetime
 import socket
 
+from bs4 import BeautifulSoup as bs
+
 API_TOKEN = os.getenv('TOKEN')
+
+REG_GROUP = os.getenv('REGISTER')
 
 modo = os.getenv('MODO')
 
@@ -63,18 +68,79 @@ def check_adm(user_id, admin_list):
 	return False
 
 @run_async
+def saiu(bot, update):
+	m = update.message.left_chat_member
+
+	if m is not None:
+		if m.is_bot == True:
+			bot_out = '''
+#SAIDA_BOT
+<b>De:</b> {bot_name} [{bot_id}]
+<b>Grupo:</b> {group_name} [{group_id}]
+<b>Data:</b> {data}
+	'''.format(bot_name=m.full_name,
+			bot_id=m.id,
+			group_name=update.message.chat.title,
+			group_id=update.message.chat.id,
+			data=datetime.datetime.now().strftime('%I:%M %d %B, %Y'))
+
+			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_out)
+		else:
+			user_out = '''
+#SAIDA_USUARIO
+<b>De:</b> {user_name} [{user_id}]
+<b>Grupo:</b> {group_name} [{group_id}]
+<b>Data:</b> {data}
+	'''.format(user_name=m.full_name,
+			user_id=m.id,
+			group_name=update.message.chat.title,
+			group_id=update.message.chat.id,
+			data=datetime.datetime.now().strftime('%I:%M %d %B, %Y'))
+
+			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=user_out)
+
+@run_async
 def bvindas(bot, update):
 	for m in update.message.new_chat_members:
 		alvo_id = m.id
+
+		if m.full_name == None or m.first_name == None:
+			m.full_name = m.username
 
 		if m.is_bot == True:
 			if alvo_id not in Excecoes:
 				bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
 				bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Bot {} removido.</b>'.format(alvo_id))
+
+				bot_entry = '''
+#ENTRADA_BOT
+<b>De:</b> {bot_name} [{bot_id}]
+<b>Grupo:</b> {group_name} [{group_id}]
+<b>Data:</b> {data}
+'''.format(bot_name=m.full_name,
+		bot_id=m.id,
+		group_name=update.message.chat.title,
+		group_id=update.message.chat.id,
+		data=datetime.datetime.now().strftime('%I:%M %d %B, %Y'))
+
+				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_entry)
 			else: pass
 		else:
 			boasvindas = '<b>Olá, {}. Bem-vindo(a) ao {}.</b>'.format(m.full_name, update.message.chat.title)
-			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=boasvindas)	
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=boasvindas)
+
+			user_entry = '''
+#ENTRADA_USUARIO
+<b>De:</b> {user_name} [{user_id}]
+<b>Grupo:</b> {group_name} [{group_id}]
+<b>Data:</b> {data}
+'''.format(user_name=m.full_name,
+		user_id=m.id,
+		group_name=update.message.chat.title,
+		group_id=update.message.chat.id,
+		data=datetime.datetime.now().strftime('%I:%M %d %B, %Y'))
+
+			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=user_entry)
 
 def info(bot, update):
 	info_txt = """
@@ -328,6 +394,8 @@ def pin(bot, update):
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Mensagem fixada.</b>', reply_to_message_id=update.message.reply_to_message.message_id)
 	else:
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
+
+
 
 def emailrep(bot, update, args):
 	#usa a API do emailrep para conseguir a reputação de um e-mail
