@@ -19,6 +19,7 @@ import datetime
 import socket
 from pytz import timezone
 import nude
+import shutil
 from nude import Nude
 
 API_TOKEN = os.getenv('TOKEN')
@@ -70,8 +71,13 @@ def check_adm(user_id, admin_list):
 
 @run_async
 def check_nude(bot, update):
-	foto = bot.get_file(update.message.photo[-1].file_id)
-	filename = foto.file_id
+	foto = bot.get_file(update.message.photo[-1].file_path)
+	r = requests.get(foto, stream=True)
+	foto = foto.split('/')[-1]
+
+	with open(foto, 'wb') as fo:
+		shutil.copyfileobj(r.raw, fo)
+	del r
 
 	if nude.is_nude(str(foto)) == True:
 		alvo_id = update.message.reply_to_message.from_user.id
