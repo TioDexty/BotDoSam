@@ -260,8 +260,7 @@ def ajuda(bot, update):
 <b>Apenas administrador ou moderador</b>
 /k ou /kick - Remove o usuário alvo do grupo
 /b ou /ban - Bane o usuário alvo do grupo
-/titulo - Altera o título do grupo
-/desc - Altera a descrição do grupo
+/p ou /pin - Fixa uma mensagem escolhida
 """
 
 	bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=ajuda, reply_to_message_id=update.message.message_id)
@@ -337,6 +336,7 @@ def main():
 	dispatcher.add_handler(CommandHandler('ban', banir))
 	dispatcher.add_handler(CommandHandler('b', banir))
 	dispatcher.add_handler(CommandHandler('pin', pin))
+	dispatcher.add_handler(CommandHandler('p', pin))
 
 	# mensagem de boas vindas
 	dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, bvindas))
