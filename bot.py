@@ -67,7 +67,7 @@ def bvindas(bot, update):
 
 		if m.is_bot == True:
 			bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
-			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Bot removido.</b>')
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Bot {} removido.</b>'.format(alvo_id))
 
 		boasvindas = '<b>Olá, {}. Bem-vindo(a) ao {}.</b>'.format(m.full_name, update.message.chat.title)
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=boasvindas)	
@@ -342,8 +342,6 @@ def main():
 	dispatcher.add_handler(CommandHandler('b', banir))
 	dispatcher.add_handler(CommandHandler('pin', pin))
 	dispatcher.add_handler(CommandHandler('p', pin))
-	dispatcher.add_handler(CommandHandler('acervo', acervo))
-	dispatcher.add_handler(CommandHandler('a', acervo))
 
 	# mensagem de boas vindas
 	dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, bvindas))
