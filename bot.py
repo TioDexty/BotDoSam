@@ -340,7 +340,7 @@ def emailrep(bot, update, args):
 
 <b>Por favor, aguarde.</b>'''.format(args[0])
 
-	bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=carregando, reply_to_message_id=update.message.message_id)
+	msg = bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=carregando, reply_to_message_id=update.message.message_id)
 
 	####
 
