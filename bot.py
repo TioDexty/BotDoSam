@@ -126,8 +126,7 @@ def admin(bot, update):
 		for adm in bot.get_chat_administrators(chat_id=update.message.chat_id):
 			adm_username = adm.user
 
-			msg += '<a href="http://t.me/{link}"> <b>{username}</b> </a>\n'.format(link=adm_username['username'],
-				username=adm_username['first_name'])
+			msg += '<b>@{username}</b>\n'.format(username=adm_username['username'])
 
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=msg, reply_to_message_id=update.message.message_id)
 	except BadRequest as e:
