@@ -11,10 +11,13 @@ import requests
 import json
 import shodan
 import random
+import sys
 import os
 import re
 
 API_TOKEN = os.getenv('TOKEN')
+
+modo = os.getenv('MODO')
 
 shod_key1 = os.getenv('SHODAN_1')
 shod_key2 = os.getenv('SHODAN_2')
@@ -28,8 +31,25 @@ shodan_keys.append(shod_key2)
 canal = ['https://t.me/AcervoDoSam', '@AcervoDoSam']
 ####
 
-
 logging.basicConfig(level=logging.INFO)
+
+if modo == 'dev':
+	def rodar(updater):
+		updater.start_polling()
+		updater.idle()
+
+elif modo == 'prod':
+	def run(updater):
+		PORTA = int(os.environ.get('PORT', '8443'))
+		HEROKU_NOME = os.environ.get3('HEROKU_APP_NAME')
+
+		updater.start_webhook(listen='0.0.0.0',
+								port=PORTA,
+								url_path=TOKEN)
+		updater.bot.set_webhook('https://{}.herokuapp.com/{}'.format(HEROKU_NOME, TOKEN))
+else:
+	logger.error('MODO NÃO ESPECIFICADO')
+	sys.exit()
 
 def check_adm(user_id, admin_list):
 	for adm in admin_list:
@@ -269,7 +289,6 @@ def expulsar(bot, update):
 	else:
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
 
-
 def banir(bot, update):
 	#banir alvo do grupo
 	admin_list = bot.get_chat_administrators(chat_id=update.message.chat_id)
@@ -321,8 +340,7 @@ def main():
 
 	# mensagem de boas vindas
 	dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, bvindas))
-	updater.start_polling()
-	updater.idle()
+	rodar(updater)
 
 if __name__ == '__main__':
 	main()
