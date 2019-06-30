@@ -284,8 +284,6 @@ def expulsar(bot, update):
 		bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
 		bot.unban_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=expulso, reply_to_message_id=update.message.message_id)
-	
-		expulsos.append(alvo_id)
 	else:
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
 
@@ -343,6 +341,5 @@ def main():
 	dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, bvindas))
 	
 	rodar(updater)
-
 if __name__ == '__main__':
 	main()
