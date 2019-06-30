@@ -45,11 +45,11 @@ elif modo == 'prod':
 		HEROKU_NOME = os.environ.get('HEROKU_APP_NAME')
 
 		updater.start_webhook(listen='0.0.0.0',
-								port=PORTA,
-								url_path=API_TOKEN)
+			port=PORTA,
+			url_path=API_TOKEN)
 		updater.bot.set_webhook('https://{}.herokuapp.com/{}'.format(HEROKU_NOME, API_TOKEN))
 else:
-	logger.error('MODO NÃO ESPECIFICADO')
+	logging.error('MODO NÃO ESPECIFICADO')
 	sys.exit()
 
 def check_adm(user_id, admin_list):
@@ -102,20 +102,13 @@ def link(bot, update):
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Erro: </b>{}\n\nTalvez eu precise de permissões de administrador para executar este comando.'.format(e), reply_to_message_id=update.message.message_id)
 
 def gp(bot, update):
-	id_data = str(bot.get_chat(chat_id=update.message.chat_id))
-
-	id_data = re.sub("'", '"', id_data)
-	js = json.loads(id_data)
 
 	msg = """
 <b>Informações atuais do grupo</b>
 
-<b>ID:</b> {}
-<b>Tipo:</b> {}
-
 <b>Título:</b> {}
 <b>Número de membros:</b> {}
-""".format(js['id'], js['type'], js['title'], bot.get_chat_members_count(chat_id=update.message.chat_id))
+""".format(update.message.chat.title, bot.get_chat_members_count(chat_id=update.message.chat_id))
 
 	bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=msg, reply_to_message_id=update.message.message_id)
 
@@ -291,6 +284,8 @@ def expulsar(bot, update):
 		bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
 		bot.unban_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=expulso, reply_to_message_id=update.message.message_id)
+	
+		expulsos.append(alvo_id)
 	else:
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
 
@@ -345,6 +340,7 @@ def main():
 
 	# mensagem de boas vindas
 	dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, bvindas))
+	
 	rodar(updater)
 
 if __name__ == '__main__':
