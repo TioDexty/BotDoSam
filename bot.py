@@ -116,8 +116,6 @@ def bvindas(bot, update):
 <b>De:</b> {bot_name} [{bot_id}]
 <b>Grupo:</b> {group_name} [{group_id}]
 <b>Data:</b> {data}
-
-<b>REMOVIDO</b>
 '''.format(bot_name=m.full_name,
 		bot_id=m.id,
 		group_name=update.message.chat.title,
