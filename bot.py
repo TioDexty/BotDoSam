@@ -400,7 +400,7 @@ def salvar(bot, update):
 	user_id = update.message.from_user.id
 
 	bot.forward_message(chat_id=user_id, from_chat_id=update.message.chat_id, message_id=update.message.reply_to_message.message_id)
-	bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Mensagem salva no seu privado.</b>', reply_to_message_id=update.message.message_id)
+	bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>A mensagem foi salva no seu privado.</b>', reply_to_message_id=update.message.message_id)
 
 def emailrep(bot, update, args):
 	#usa a API do emailrep para conseguir a reputação de um e-mail
