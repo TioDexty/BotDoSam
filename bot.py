@@ -14,6 +14,7 @@ import random
 import sys
 import os
 import re
+import sockets
 
 API_TOKEN = os.getenv('TOKEN')
 
@@ -41,7 +42,7 @@ if modo == 'dev':
 elif modo == 'prod':
 	def rodar(updater):
 		PORTA = int(os.environ.get('PORT', '8443'))
-		HEROKU_NOME = os.environ.get3('HEROKU_APP_NAME')
+		HEROKU_NOME = os.environ.get('HEROKU_APP_NAME')
 
 		updater.start_webhook(listen='0.0.0.0',
 								port=PORTA,
@@ -120,6 +121,8 @@ def gp(bot, update):
 
 def honeypot(bot, update, args):
 	try:
+		args[0] = socket.gethostbyname(args[0])
+
 		key = random.choice(shodan_keys)
 
 		api = shodan.Shodan(key)
