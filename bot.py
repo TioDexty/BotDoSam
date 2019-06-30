@@ -45,9 +45,9 @@ elif modo == 'prod':
 		HEROKU_NOME = os.environ.get('HEROKU_APP_NAME')
 
 		updater.start_webhook(listen='0.0.0.0',
-				port=PORTA,
-				url_path=API_TOKEN)
-		updater.bot.set_webhook('https://{}.herokuapp.com/{}'.format(HEROKU_NOME, API_TOKEN))
+								port=PORTA,
+								url_path=TOKEN)
+		updater.bot.set_webhook('https://{}.herokuapp.com/{}'.format(HEROKU_NOME, TOKEN))
 else:
 	logger.error('MODO NÃO ESPECIFICADO')
 	sys.exit()
@@ -165,10 +165,12 @@ A probabilidade do endereço ser uma honeypot é <b>pequena</b>: {}
 		bot.edit_message_text(parse_mode='HTML', chat_id=update.message.chat_id, message_id=msg.message_id, text=novo_texto)
 
 	except IndexError:
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='/honeypot <b>IP</b> para obter o resultado.', reply_to_message_id=update.message.message_id)
+		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='/honeypot <b>IP</b>/<b>DOMÍNIO</b> para obter o resultado.', reply_to_message_id=update.message.message_id)
 
 def ip(bot, update, args):
 	try:
+		args[0] = socket.gethostbyname(args[0])
+
 		key = random.choice(shodan_keys)
 
 		api = shodan.Shodan(key)
@@ -235,7 +237,7 @@ Voltarei com os resultados assim que possível."""
 			print('Erro: ' + str(e))
 
 	except IndexError:
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='/ip <b>IP</b> para obter informações sobre o endereço.', reply_to_message_id=update.message.message_id)
+		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='/ip <b>IP</b>/<b>DOMÍNIO</b> para obter informações sobre o endereço.', reply_to_message_id=update.message.message_id)
 
 def regras(bot, update):
 	regras = """
