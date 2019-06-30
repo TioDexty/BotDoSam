@@ -4,16 +4,25 @@
 #@AcervoDoSam
 #@GrupoDoSam
 
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram.error import NetworkError, Unauthorized, BadRequest
 import logging
 import requests
 import json
 import shodan
 import random
+import os
 import re
 
-API_TOKEN = 'TOKEN @BOTFATHER'
+API_TOKEN = os.getenv('TOKEN')
+
+shod_key1 = os.getenv('SHODAN_1')
+shod_key2 = os.getenv('SHODAN_2')
+
+shodan_keys = []
+
+shodan_keys.append(shod_key1)
+shodan_keys.append(shod_key2)
 
 ####
 canal = ['https://t.me/AcervoDoSam', '@AcervoDoSam']
@@ -21,9 +30,6 @@ canal = ['https://t.me/AcervoDoSam', '@AcervoDoSam']
 
 
 logging.basicConfig(level=logging.INFO)
-
-shodan_keys = ["chave_um",
-			"chave_dois"]
 
 def check_adm(user_id, admin_list):
 	for adm in admin_list:
@@ -33,14 +39,16 @@ def check_adm(user_id, admin_list):
 	return False
 
 def bvindas(bot, update):
-	bot.send_message(chat_id=update.message.chat_id, text="Boas-vindas", reply_to_message_id=update.message.message_id)
+	for m in update.message.new_chat_members:
+		boasvindas = '<b>Olá, {}. Bem-vindo(a) ao, {}.</b>'.format(m.first_name, update.message.chat.title)
+		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=boasvindas)	
 
 def info(bot, update):
 	info_txt = """
 <b>Olá, sou o bot do Sam, fui criado para administrar o canal e o grupo do @SamMarx.</b>
 
 <b>Desenvolvedor: </b> <a href="http://t.me/SamMarx">Sam</a>.
-<b>Código: </b> <a href="http://github.com/SamMarx/BotDoSam">Github</a>.
+<b>Código: </b> <a href="http://github.com/Sam-Marx/BotDoSam">Github</a>.
 """
 
 	bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=info_txt, reply_to_message_id=update.message.message_id)
@@ -261,6 +269,7 @@ def expulsar(bot, update):
 	else:
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
 
+
 def banir(bot, update):
 	#banir alvo do grupo
 	admin_list = bot.get_chat_administrators(chat_id=update.message.chat_id)
@@ -309,6 +318,9 @@ def main():
 	dispatcher.add_handler(CommandHandler('ban', banir))
 	dispatcher.add_handler(CommandHandler('b', banir))
 	dispatcher.add_handler(CommandHandler('pin', pin))
+
+	# mensagem de boas vindas
+	dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, bvindas))
 	updater.start_polling()
 	updater.idle()
 
