@@ -28,6 +28,9 @@ nudity = Nudity()
 #BOT TOKEN
 API_TOKEN = os.getenv('TOKEN')
 
+#GRUPO_PERMITIDO (APENAS UM GRUPO)
+OFC_G = os.getenv('ONE_GROUP_ONLY')
+
 #REGISTRY_GROUP
 REG_GROUP = os.getenv('REGISTER')
 
@@ -51,6 +54,7 @@ shodan_keys.append(shod_key2)
 canal = ['https://t.me/AcervoDoSam', '@AcervoDoSam']
 ####
 
+permitidos = ['-1001480767444']
 Excecoes = ['']
 
 logging.basicConfig(level=logging.INFO)
@@ -73,6 +77,12 @@ else:
 	logging.error('MODO NÃO ESPECIFICADO')
 	sys.exit()
 
+def check_group(chat_id):
+	if str(chat_id) == str(OFC_G):
+		return True
+	else:
+		return False
+
 def check_adm(user_id, admin_list):
 	for adm in admin_list:
 		adm_id = adm.user.id
@@ -82,153 +92,202 @@ def check_adm(user_id, admin_list):
 
 @run_async
 def check_nude_sticker(bot, update):
-	'''
-	A função check_nude_sticker será a versão 1.0 (sem Algorithmia), pois
-	não é possível fazer a verificação com a extensão .webp.
-	'''	
-	try:
-		sticker = str(bot.get_file(update.message.sticker.file_id)).replace("'", '"')
+	if check_group(chat_id=update.message.chat_id) == True:
+		
 
-		js = json.loads(sticker)
-		sticker = js['file_path']
-
-		r = requests.get(sticker, stream=True)
-		sticker = sticker.split('/')[-1]
-
-		with open(sticker, 'wb') as fo:
-			shutil.copyfileobj(r.raw, fo)
-		del r
-
-		#transformando de webp para jpg
-		im = Image.open(sticker).convert('RGB') 
-		sticker = sticker.split('.')[0] + '.jpg'
-		im.save(sticker, 'jpeg')
-
-		if nudity.has(str(sticker)) == True: #checando se tem nude ou n com nudepy
-			alvo_id = update.message.from_user.id
-			alvo_usuario = update.message.from_user.username
-			alvo_nome = update.message.from_user.first_name
-
-			if alvo_usuario == None:
-				banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_nome, alvo_id)
-			else:
-				banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_usuario, alvo_id)
-
-			banido_usuario = '''
-#BANIDO_USUARIO
-<b>Usuário: </b>{user_name} [{user_id}]
-<b>Grupo: </b>{group_name} [{group_id}]
-<b>Data: </b>{data}
-<b>Motivo: </b>{motivo}
-'''.format(user_name=alvo_usuario,
-			user_id=alvo_id,
-			group_name=update.message.chat.title,
-			group_id=update.message.chat.id,
-			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'),
-			motivo='Pornografia')
-
-			bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
-			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=banido, reply_to_message_id=update.message.message_id)
-			bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
-			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=banido_usuario)
-
-			del banido_usuario
-			del banido
-			del alvo_id
-			del alvo_usuario
-			del alvo_nome
-		else: pass
-
-		os.remove(sticker) #remove os stickers salvos para n ocupar espaço
-		os.remove(sticker.split('.')[0] + '.webp') #remove os stickers salvos para n ocupar espaço
-	
-		del sticker
-	except BadRequest as e:
+		'''
+		A função check_nude_sticker será a versão 1.0 (sem Algorithmia), pois
+		não é possível fazer a verificação com a extensão .webp.
+		'''
 		try:
-			os.remove(sticker)
-			os.remove(sticker.split('.')[0] + '.webp')
-		except: pass
+			sticker = str(bot.get_file(update.message.sticker.file_id)).replace("'", '"')
 
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>O usuário é administrador e não pode ser banido.</b>', reply_to_message_id=update.message.message_id)
-		bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
+			js = json.loads(sticker)
+			sticker = js['file_path']
+
+			r = requests.get(sticker, stream=True)
+			sticker = sticker.split('/')[-1]
+
+			with open(sticker, 'wb') as fo:
+				shutil.copyfileobj(r.raw, fo)
+			del r
+
+			#transformando de webp para jpg
+			im = Image.open(sticker).convert('RGB') 
+			sticker = sticker.split('.')[0] + '.jpg'
+			im.save(sticker, 'jpeg')
+
+			if nudity.has(str(sticker)) == True: #checando se tem nude ou n com nudepy
+				alvo_id = update.message.from_user.id
+				alvo_usuario = update.message.from_user.username
+				alvo_nome = update.message.from_user.first_name
+
+				if alvo_usuario == None:
+					banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_nome, alvo_id)
+				else:
+					banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_usuario, alvo_id)
+
+				banido_usuario = '''
+	#BANIDO_USUARIO
+	<b>Usuário: </b>{user_name} [{user_id}]
+	<b>Grupo: </b>{group_name} [{group_id}]
+	<b>Data: </b>{data}
+	<b>Motivo: </b>{motivo}
+	'''.format(user_name=alvo_usuario,
+				user_id=alvo_id,
+				group_name=update.message.chat.title,
+				group_id=update.message.chat.id,
+				data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'),
+				motivo='Pornografia')
+
+				bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
+				bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=banido, reply_to_message_id=update.message.message_id)
+				bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
+				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=banido_usuario)
+
+				del banido_usuario
+				del banido
+				del alvo_id
+				del alvo_usuario
+				del alvo_nome
+			else: pass
+
+			os.remove(sticker) #remove os stickers salvos para n ocupar espaço
+			os.remove(sticker.split('.')[0] + '.webp') #remove os stickers salvos para n ocupar espaço
+		
+			del sticker
+		except BadRequest as e:
+			try:
+				os.remove(sticker)
+				os.remove(sticker.split('.')[0] + '.webp')
+			except: pass
+
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>O usuário é administrador e não pode ser banido.</b>', reply_to_message_id=update.message.message_id)
+			bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
 @run_async
 def check_nude_image(bot, update):
-	try:
-		foto = bot.get_file(update.message.photo[-1].file_id)
+	if check_group(chat_id=update.message.chat_id) == True:
+		try:
+			foto = bot.get_file(update.message.photo[-1].file_id)
 
-		foto = str(foto) #transformando o tipo type para string
-		foto = foto.replace("'", '"') #substituindo os ' por "
+			foto = str(foto) #transformando o tipo type para string
+			foto = foto.replace("'", '"') #substituindo os ' por "
 
-		js = json.loads(foto) #carregando o json
-		foto = js['file_path'] #conseguindo a fonte da imagem
+			js = json.loads(foto) #carregando o json
+			foto = js['file_path'] #conseguindo a fonte da imagem
 
-		algo_js = algo.pipe(foto).result #passando a fonte na API do algorithmia
+			algo_js = algo.pipe(foto).result #passando a fonte na API do algorithmia
 
-		if algo_js['nude'] == 'true': #checando se tem nude ou n
-			alvo_id = update.message.from_user.id
-			alvo_usuario = update.message.from_user.username
-			alvo_nome = update.message.from_user.first_name
+			if algo_js['nude'] == 'true': #checando se tem nude ou n
+				alvo_id = update.message.from_user.id
+				alvo_usuario = update.message.from_user.username
+				alvo_nome = update.message.from_user.first_name
 
-			if alvo_usuario == None:
-				banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_nome, alvo_id)
-			else:
-				banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_usuario, alvo_id)
+				if alvo_usuario == None:
+					banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_nome, alvo_id)
+				else:
+					banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_usuario, alvo_id)
 
-			banido_usuario = '''
+				banido_usuario = '''
 #BANIDO_USUARIO
 <b>Usuário: </b>{user_name} [{user_id}]
 <b>Grupo: </b>{group_name} [{group_id}]
 <b>Data: </b>{data}
 <b>Motivo: </b>{motivo}
 '''.format(user_name=alvo_usuario,
-			user_id=alvo_id,
-			group_name=update.message.chat.title,
-			group_id=update.message.chat.id,
-			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'),
-			motivo='Pornografia')
+				user_id=alvo_id,
+				group_name=update.message.chat.title,
+				group_id=update.message.chat.id,
+				data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'),
+				motivo='Pornografia')
 
-			bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
-			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=banido, reply_to_message_id=update.message.message_id)
+				bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
+				bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=banido, reply_to_message_id=update.message.message_id)
+				bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
+				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=banido_usuario)
+
+				del banido_usuario
+				del banido
+				del alvo_id
+				del alvo_usuario
+				del alvo_nome
+			else: pass
+
+			#tentando liberar memória pro bot n explodir
+			del js
+			del algo_js
+
+		except BadRequest as e:
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>O usuário é administrador e não pode ser banido.</b>', reply_to_message_id=update.message.message_id)
 			bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
-			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=banido_usuario)
-
-			del banido_usuario
-			del banido
-			del alvo_id
-			del alvo_usuario
-			del alvo_nome
-		else: pass
-
-		#tentando liberar memória pro bot n explodir
-		del js
-		del algo_js
-
-	except BadRequest as e:
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>O usuário é administrador e não pode ser banido.</b>', reply_to_message_id=update.message.message_id)
-		bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
 @run_async
 def saida(bot, update):
-	m = update.message.left_chat_member
+	if check_group(chat_id=update.message.chat_id) == True:
+		m = update.message.left_chat_member
 
-	if m is not None:
-		if m.is_bot == True:
-			bot_out = '''
+		if m is not None:
+			if m.is_bot == True:
+				bot_out = '''
 #SAIDA_BOT
 <b>De:</b> {bot_name} [{bot_id}]
 <b>Grupo:</b> {group_name} [{group_id}]
 <b>Data:</b> {data}
 '''.format(bot_name=m.full_name,
-		bot_id=m.id,
-		group_name=update.message.chat.title,
-		group_id=update.message.chat.id,
-		data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'))
+			bot_id=m.id,
+			group_name=update.message.chat.title,
+			group_id=update.message.chat.id,
+			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'))
 
-			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_out)
-		else:
-			user_out = '''
+				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_out)
+			else:
+				user_out = '''
 #SAIDA_USUARIO
+<b>De:</b> {user_name} [{user_id}]
+<b>Grupo:</b> {group_name} [{group_id}]
+<b>Data:</b> {data}
+'''.format(user_name=m.full_name,
+				user_id=m.id,
+				group_name=update.message.chat.title,
+				group_id=update.message.chat.id,
+				data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'))
+
+				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=user_out)
+
+@run_async
+def bvindas(bot, update):
+	if check_group(chat_id=update.message.chat_id) == True:
+		for m in update.message.new_chat_members:
+			alvo_id = m.id
+
+			if m.full_name == None or m.first_name == None:
+				m.full_name = m.username
+
+			if m.is_bot == True:
+				if alvo_id not in Excecoes:
+					bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
+					bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Bot {} removido.</b>'.format(alvo_id))
+
+					bot_entry = '''
+#ENTRADA_BOT
+<b>De:</b> {bot_name} [{bot_id}]
+<b>Grupo:</b> {group_name} [{group_id}]
+<b>Data:</b> {data}
+'''.format(bot_name=m.full_name,
+			bot_id=m.id,
+			group_name=update.message.chat.title,
+			group_id=update.message.chat.id,
+			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'))
+
+					bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_entry)
+				else: pass
+			else:
+				boasvindas = '<b>Olá, {}. Bem-vindo(a) ao {}.</b>'.format(m.full_name, update.message.chat.title)
+				bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=boasvindas)
+
+				user_entry = '''
+#ENTRADA_USUARIO
 <b>De:</b> {user_name} [{user_id}]
 <b>Grupo:</b> {group_name} [{group_id}]
 <b>Data:</b> {data}
@@ -238,106 +297,70 @@ def saida(bot, update):
 			group_id=update.message.chat.id,
 			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'))
 
-			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=user_out)
-
-@run_async
-def bvindas(bot, update):
-	for m in update.message.new_chat_members:
-		alvo_id = m.id
-
-		if m.full_name == None or m.first_name == None:
-			m.full_name = m.username
-
-		if m.is_bot == True:
-			if alvo_id not in Excecoes:
-				bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
-				bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Bot {} removido.</b>'.format(alvo_id))
-
-				bot_entry = '''
-#ENTRADA_BOT
-<b>De:</b> {bot_name} [{bot_id}]
-<b>Grupo:</b> {group_name} [{group_id}]
-<b>Data:</b> {data}
-'''.format(bot_name=m.full_name,
-		bot_id=m.id,
-		group_name=update.message.chat.title,
-		group_id=update.message.chat.id,
-		data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'))
-
-				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_entry)
-			else: pass
-		else:
-			boasvindas = '<b>Olá, {}. Bem-vindo(a) ao {}.</b>'.format(m.full_name, update.message.chat.title)
-			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=boasvindas)
-
-			user_entry = '''
-#ENTRADA_USUARIO
-<b>De:</b> {user_name} [{user_id}]
-<b>Grupo:</b> {group_name} [{group_id}]
-<b>Data:</b> {data}
-'''.format(user_name=m.full_name,
-		user_id=m.id,
-		group_name=update.message.chat.title,
-		group_id=update.message.chat.id,
-		data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'))
-
-			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=user_entry)
+				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=user_entry)
 
 def info(bot, update):
-	info_txt = """
+	if check_group(chat_id=update.message.chat_id) == True:
+		info_txt = """
 <b>Olá, sou o bot do Sam, fui criado para administrar o canal e o grupo do @SamMarx.</b>
 
 <b>Desenvolvedor: </b> <a href="http://t.me/SamMarx">Sam</a>.
 <b>Código: </b> <a href="http://github.com/Sam-Marx/BotDoSam">Github</a>.
 """
 
-	bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=info_txt, reply_to_message_id=update.message.message_id)
+		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=info_txt, reply_to_message_id=update.message.message_id)
 
 def admin(bot, update):
-	try:
-		msg = '<b>Administrador(es)</b>\n\n'
+	if check_group(chat_id=update.message.chat_id) == True:
+		try:
+			msg = '<b>Administrador(es)</b>\n\n'
 
-		for adm in bot.get_chat_administrators(chat_id=update.message.chat_id):
-			adm_username = adm.user
+			for adm in bot.get_chat_administrators(chat_id=update.message.chat_id):
+				adm_username = adm.user
 
-			msg += '<b>@{username}</b>\n'.format(username=adm_username['username'])
+				msg += '<b>@{username}</b>\n'.format(username=adm_username['username'])
 
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=msg, reply_to_message_id=update.message.message_id)
-	except BadRequest as e:
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Erro: </b>{}'.format(e), reply_to_message_id=update.message.message_id)
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=msg, reply_to_message_id=update.message.message_id)
+		except BadRequest as e:
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Erro: </b>{}'.format(e), reply_to_message_id=update.message.message_id)
 
 def link(bot, update):
-	cnl = random.choice(canal)
+	if check_group(chat_id=update.message.chat_id) == True:
+		cnl = random.choice(canal)
 
-	try:
-		msg = """
+		try:
+			msg = """
 <b>Link do grupo: </b>{}
 <b>Link do canal: </b>{}
 	""".format(bot.export_chat_invite_link(chat_id=update.message.chat_id),cnl)
 
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=msg, reply_to_message_id=update.message.message_id)
-	except BadRequest as e:
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Erro: </b>{}\n\nTalvez eu precise de permissões de administrador para executar este comando.'.format(e), reply_to_message_id=update.message.message_id)
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=msg, reply_to_message_id=update.message.message_id)
+		except BadRequest as e:
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Erro: </b>{}\n\nTalvez eu precise de permissões de administrador para executar este comando.'.format(e), reply_to_message_id=update.message.message_id)
 
 def gp(bot, update):
-	msg = """
+	if check_group(chat_id=update.message.chat_id) == True:
+		msg = """
 <b>Informações atuais do grupo</b>
 
 <b>Título:</b> {}
 <b>Número de membros:</b> {}
 """.format(update.message.chat.title, bot.get_chat_members_count(chat_id=update.message.chat_id))
 
-	bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=msg, reply_to_message_id=update.message.message_id)
+		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=msg, reply_to_message_id=update.message.message_id)
+	else:
+		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=str(update.message.chat_id), reply_to_message_id=update.message.message_id)
 
 def honeypot(bot, update, args):
-	try:
-		args[0] = socket.gethostbyname(args[0])
+	if check_group(chat_id=update.message.chat_id) == True:
+		try:
+			args[0] = socket.gethostbyname(args[0])
 
-		key = random.choice(shodan_keys)
+			key = random.choice(shodan_keys)
 
-		api = shodan.Shodan(key)
+			api = shodan.Shodan(key)
 
-		honey_text = """
+			honey_text = """
 <b>Honeypot</b>
 <b>IP: </b>{}
 
@@ -347,12 +370,12 @@ Calculando a probabilidade do endereço ser uma honeypot...
 0.0 = não é uma honeypot
 """
 
-		msg = bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=honey_text.format(args[0]), reply_to_message_id=update.message.message_id)
+			msg = bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=honey_text.format(args[0]), reply_to_message_id=update.message.message_id)
 
-		honey_request = requests.get('https://api.shodan.io/labs/honeyscore/{}?key={}'.format(args[0], key))
+			honey_request = requests.get('https://api.shodan.io/labs/honeyscore/{}?key={}'.format(args[0], key))
 
-		if float(honey_request.text) > 0.5:
-			novo_texto = """
+			if float(honey_request.text) > 0.5:
+				novo_texto = """
 <b>Honeypot</b>
 <b>IP: </b>{}
 
@@ -362,8 +385,8 @@ A probabilidade do endereço ser uma honeypot é <b>grande</b>: {}
 0.0 = não é uma honeypot
 """.format(args[0], honey_request.text)
 
-		else:
-			novo_texto = """
+			else:
+				novo_texto = """
 <b>IP: </b>{}
 
 A probabilidade do endereço ser uma honeypot é <b>pequena</b>: {}
@@ -372,42 +395,43 @@ A probabilidade do endereço ser uma honeypot é <b>pequena</b>: {}
 0.0 = não é uma honeypot
 """.format(args[0], honey_request.text)
 
-		bot.edit_message_text(parse_mode='HTML', chat_id=update.message.chat_id, message_id=msg.message_id, text=novo_texto)
+			bot.edit_message_text(parse_mode='HTML', chat_id=update.message.chat_id, message_id=msg.message_id, text=novo_texto)
 
-	except IndexError:
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='/honeypot <b>IP</b>/<b>DOMÍNIO</b> para obter o resultado.', reply_to_message_id=update.message.message_id)
+		except IndexError:
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='/honeypot <b>IP</b>/<b>DOMÍNIO</b> para obter o resultado.', reply_to_message_id=update.message.message_id)
 
 def ip(bot, update, args):
-	try:
-		args[0] = socket.gethostbyname(args[0])
+	if check_group(chat_id=update.message.chat_id) == True:
+		try:
+			args[0] = socket.gethostbyname(args[0])
 
-		key = random.choice(shodan_keys)
+			key = random.choice(shodan_keys)
 
-		api = shodan.Shodan(key)
+			api = shodan.Shodan(key)
 
-		ip_text = """
+			ip_text = """
 <b>IP: </b>{} sendo escaneado.
 
 Voltarei com os resultados assim que possível."""
 
-		msg = bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=ip_text.format(args[0]), reply_to_message_id=update.message.message_id)
+			msg = bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=ip_text.format(args[0]), reply_to_message_id=update.message.message_id)
 
-		try:
-			geo_ip = requests.get('http://ip-api.com/json/{}'.format(args[0]))
+			try:
+				geo_ip = requests.get('http://ip-api.com/json/{}'.format(args[0]))
 
-			geo_ip_json = json.loads(geo_ip.text)
+				geo_ip_json = json.loads(geo_ip.text)
 
-			asn = geo_ip_json['as']
-			cidade = geo_ip_json['city']
-			pais =geo_ip_json['country']
-			codigoPais = geo_ip_json['countryCode']
-			isp = geo_ip_json['isp']
-			lat = geo_ip_json['lat']
-			lon = geo_ip_json['lon']
+				asn = geo_ip_json['as']
+				cidade = geo_ip_json['city']
+				pais =geo_ip_json['country']
+				codigoPais = geo_ip_json['countryCode']
+				isp = geo_ip_json['isp']
+				lat = geo_ip_json['lat']
+				lon = geo_ip_json['lon']
 
-			host = api.host(args[0])
+				host = api.host(args[0])
 
-			novo_texto = """
+				novo_texto = """
 <b>IP: </b>{}
 <b>Hospedado por: </b>{}
 <b>País: </b>{} - {}
@@ -421,36 +445,37 @@ Voltarei com os resultados assim que possível."""
 <b>Portas: </b>{}
 """	
 
-			bot.edit_message_text(parse_mode='HTML', chat_id=update.message.chat_id, 
-				message_id=msg.message_id, 
-				text=novo_texto.format(
-					args[0],
-					asn,
-					pais, codigoPais,
-					cidade,
-					isp,
-					lat,
-					lon,
-					host.get('org', 'n/a'), 
-					host.get('os', 'n/a'), 
-					host.get('ports', 'n/a')))
+				bot.edit_message_text(parse_mode='HTML', chat_id=update.message.chat_id, 
+					message_id=msg.message_id, 
+					text=novo_texto.format(
+						args[0],
+						asn,
+						pais, codigoPais,
+						cidade,
+						isp,
+						lat,
+						lon,
+						host.get('org', 'n/a'), 
+						host.get('os', 'n/a'), 
+						host.get('ports', 'n/a')))
 
-		except shodan.APIError as e:
-			err_t = "<b>Erro com o IP {}: </b>{}".format(args[0], e)
-			bot.edit_message_text(parse_mode='HTML', chat_id=update.message.chat_id, message_id=msg.message_id, text=err_t)
+			except shodan.APIError as e:
+				err_t = "<b>Erro com o IP {}: </b>{}".format(args[0], e)
+				bot.edit_message_text(parse_mode='HTML', chat_id=update.message.chat_id, message_id=msg.message_id, text=err_t)
 
-		except BadRequest as e:
-			err_t = "<b>Erro: </b>{}\n\nTente novamente mais tarde.".format(e)
-			bot.edit_message_text(parse_mode='HTML', chat_id=update.message.chat_id, message_id=msg.message_id, text=err_t)
+			except BadRequest as e:
+				err_t = "<b>Erro: </b>{}\n\nTente novamente mais tarde.".format(e)
+				bot.edit_message_text(parse_mode='HTML', chat_id=update.message.chat_id, message_id=msg.message_id, text=err_t)
 
-		except Exception as e:
-			print('Erro: ' + str(e))
+			except Exception as e:
+				print('Erro: ' + str(e))
 
-	except IndexError:
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='/ip <b>IP</b>/<b>DOMÍNIO</b> para obter informações sobre o endereço.', reply_to_message_id=update.message.message_id)
+		except IndexError:
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='/ip <b>IP</b>/<b>DOMÍNIO</b> para obter informações sobre o endereço.', reply_to_message_id=update.message.message_id)
 
 def regras(bot, update):
-	regras = """
+	if check_group(chat_id=update.message.chat_id) == True:
+		regras = """
 <b>1.</b> Não envie ou peça qualquer tipo de pornografia;
 <b>2.</b> Não envie ou peça qualquer tipo de conteúdo extremo, seja ele gore, scat ou outro;
 <b>3.</b> Não envie ou peça qualquer tipo de informação pessoal ("dox"/"exposed");
@@ -462,10 +487,11 @@ def regras(bot, update):
 <b>9.</b> Proibido qualquer tipo de preconceito, exceto com fstring em python; e
 <b>10.</b> Não envie links suspeitos nem links de grupos/canais do Telegram, apenas com autorização de um administrador.
 """
-	bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=regras, reply_to_message_id=update.message.message_id)
+		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=regras, reply_to_message_id=update.message.message_id)
 
 def ajuda(bot, update):
-	ajuda = """
+	if check_group(chat_id=update.message.chat_id) == True:
+		ajuda = """
 /ip <b>IP</b> - Mostra informações sobre o endereço IP
 /regras - Envia a lista de regras do grupo
 /honeypot <b>IP</b> - Calcula probabilidade do IP ser honeypot
@@ -481,67 +507,71 @@ def ajuda(bot, update):
 /p ou /pin - Fixa uma mensagem escolhida
 """
 
-	bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=ajuda, reply_to_message_id=update.message.message_id)
+		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=ajuda, reply_to_message_id=update.message.message_id)
 
 def expulsar(bot, update):
-	#expulsar alvo do grupo
-	admin_list = bot.get_chat_administrators(chat_id=update.message.chat_id)
-	user_id = update.message.from_user.id
+	if check_group(chat_id=update.message.chat_id) == True:
+		#expulsar alvo do grupo
+		admin_list = bot.get_chat_administrators(chat_id=update.message.chat_id)
+		user_id = update.message.from_user.id
 
-	if check_adm(user_id=user_id, admin_list=admin_list) == True:
-		alvo_id = update.message.reply_to_message.from_user.id
-		alvo_usuario = update.message.reply_to_message.from_user.username
-		alvo_nome = update.message.reply_to_message.from_user.first_name
+		if check_adm(user_id=user_id, admin_list=admin_list) == True:
+			alvo_id = update.message.reply_to_message.from_user.id
+			alvo_usuario = update.message.reply_to_message.from_user.username
+			alvo_nome = update.message.reply_to_message.from_user.first_name
 
-		if alvo_usuario == None:
-			expulso = '<b>Usuário {} - {} removido.</b>'.format(alvo_nome, alvo_id)
+			if alvo_usuario == None:
+				expulso = '<b>Usuário {} - {} removido.</b>'.format(alvo_nome, alvo_id)
+			else:
+				expulso = '<b>Usuário {} - {} removido.</b>'.format(alvo_usuario, alvo_id)
+
+			bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
+			bot.unban_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=expulso, reply_to_message_id=update.message.message_id)
 		else:
-			expulso = '<b>Usuário {} - {} removido.</b>'.format(alvo_usuario, alvo_id)
-
-		bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
-		bot.unban_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=expulso, reply_to_message_id=update.message.message_id)
-	else:
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
 
 def banir(bot, update):
-	#banir alvo do grupo
-	admin_list = bot.get_chat_administrators(chat_id=update.message.chat_id)
-	user_id = update.message.from_user.id
+	if check_group(chat_id=update.message.chat_id) == True:
+		#banir alvo do grupo
+		admin_list = bot.get_chat_administrators(chat_id=update.message.chat_id)
+		user_id = update.message.from_user.id
 
-	if check_adm(user_id=user_id, admin_list=admin_list) == True:
-		alvo_id = update.message.reply_to_message.from_user.id
-		alvo_usuario = update.message.reply_to_message.from_user.username
-		alvo_nome = update.message.reply_to_message.from_user.first_name
+		if check_adm(user_id=user_id, admin_list=admin_list) == True:
+			alvo_id = update.message.reply_to_message.from_user.id
+			alvo_usuario = update.message.reply_to_message.from_user.username
+			alvo_nome = update.message.reply_to_message.from_user.first_name
 
-		if alvo_usuario == None:
-			banido = '<b>Usuário {} - {} banido.</b>'.format(alvo_nome, alvo_id)
+			if alvo_usuario == None:
+				banido = '<b>Usuário {} - {} banido.</b>'.format(alvo_nome, alvo_id)
+			else:
+				banido = '<b>Usuário {} - {} banido.</b>'.format(alvo_usuario, alvo_id)
+
+			bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=banido, reply_to_message_id=update.message.message_id)
 		else:
-			banido = '<b>Usuário {} - {} banido.</b>'.format(alvo_usuario, alvo_id)
-
-		bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=banido, reply_to_message_id=update.message.message_id)
-	else:
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
 
 def pin(bot, update):
-	#fixar mensagem
-	admin_list = bot.get_chat_administrators(chat_id=update.message.chat_id)
-	user_id = update.message.from_user.id
+	if check_group(chat_id=update.message.chat_id) == True:
+		#fixar mensagem
+		admin_list = bot.get_chat_administrators(chat_id=update.message.chat_id)
+		user_id = update.message.from_user.id
 
-	if check_adm(user_id=user_id, admin_list=admin_list) == True:
-		bot.pin_chat_message(chat_id=update.message.chat_id, message_id=update.message.reply_to_message.message_id)
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Mensagem fixada.</b>', reply_to_message_id=update.message.reply_to_message.message_id)
-	else:
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
+		if check_adm(user_id=user_id, admin_list=admin_list) == True:
+			bot.pin_chat_message(chat_id=update.message.chat_id, message_id=update.message.reply_to_message.message_id)
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Mensagem fixada.</b>', reply_to_message_id=update.message.reply_to_message.message_id)
+		else:
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
 
 def salvar(bot, update):
-	#salvar mensagem
-	user_link = update.message.from_user.link
-	user_id = update.message.from_user.id
+	if check_group(chat_id=update.message.chat_id) == True:
+		#salvar mensagem
+		user_link = update.message.from_user.link
+		user_id = update.message.from_user.id
 
-	bot.forward_message(chat_id=user_id, from_chat_id=update.message.chat_id, message_id=update.message.reply_to_message.message_id)
-	bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>A mensagem foi salva no seu privado.</b>', reply_to_message_id=update.message.message_id)
+		bot.forward_message(chat_id=user_id, from_chat_id=update.message.chat_id, message_id=update.message.reply_to_message.message_id)
+		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>A mensagem foi salva no seu privado.</b>', reply_to_message_id=update.message.message_id)
 
 def main():
 	updater = Updater(token=API_TOKEN)
