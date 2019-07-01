@@ -120,6 +120,11 @@ def check_nude_sticker(bot, update):
 			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=banido_usuario)
 		else: pass
 
+		#tentando liberar memória pro bot n explodir
+		del sticker
+		del js
+		del banido_usuario
+
 		os.remove(str(sticker)) #remove os stickers salvos para n ocupar espaço
 		os.remove(str(sticker.split('.')[0] + '.webp')) #remove os stickers salvos para n ocupar espaço
 	except BadRequest as e:
@@ -177,6 +182,11 @@ def check_nude_image(bot, update):
 			bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
 			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=banido_usuario)
 		else: pass
+
+		#tentando liberar memória pro bot n explodir
+		del foto
+		del js
+		del banido_usuario
 
 		os.remove(str(foto))
 	except BadRequest as e:
