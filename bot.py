@@ -21,20 +21,29 @@ from pytz import timezone
 import shutil
 from nudity import Nudity
 from PIL import Image
+import Algorithmia
 
 nudity = Nudity()
 
+#BOT TOKEN
 API_TOKEN = os.getenv('TOKEN')
 
+#REGISTRY_GROUP
 REG_GROUP = os.getenv('REGISTER')
 
+#MODO = DEV / PROD
 modo = os.getenv('MODO')
 
+#ALGORITHMIA NUDITY DETECTION
+ALGORITHMIA_KEY = os.getenv('ALGO_KEY')
+client = Algorithmia.client(ALGORITHMIA_KEY)
+algo = client.algo('sfw/NudityDetection/1.1.6')
+algo.set_options(timeout=300)
+
+#SHODAN KEYS
 shod_key1 = os.getenv('SHODAN_1')
 shod_key2 = os.getenv('SHODAN_2')
-
 shodan_keys = ['']
-
 shodan_keys.append(shod_key1)
 shodan_keys.append(shod_key2)
 
@@ -42,7 +51,7 @@ shodan_keys.append(shod_key2)
 canal = ['https://t.me/AcervoDoSam', '@AcervoDoSam']
 ####
 
-Excecoes = ['804801117'] #suporte
+Excecoes = ['']
 
 logging.basicConfig(level=logging.INFO)
 
@@ -73,6 +82,10 @@ def check_adm(user_id, admin_list):
 
 @run_async
 def check_nude_sticker(bot, update):
+	'''
+	A função check_nude_sticker será a versão 1.0 (sem Algorithmia), pois
+	não é possível fazer a verificação com a extensão .webp.
+	'''	
 	try:
 		sticker = str(bot.get_file(update.message.sticker.file_id)).replace("'", '"')
 
@@ -118,19 +131,22 @@ def check_nude_sticker(bot, update):
 			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=banido, reply_to_message_id=update.message.message_id)
 			bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
 			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=banido_usuario)
+
+			del banido_usuario
+			del banido
+			del alvo_id
+			del alvo_usuario
+			del alvo_nome
 		else: pass
 
-		#tentando liberar memória pro bot n explodir
+		os.remove(sticker) #remove os stickers salvos para n ocupar espaço
+		os.remove(sticker.split('.')[0] + '.webp') #remove os stickers salvos para n ocupar espaço
+	
 		del sticker
-		del js
-		del banido_usuario
-
-		os.remove(str(sticker)) #remove os stickers salvos para n ocupar espaço
-		os.remove(str(sticker.split('.')[0] + '.webp')) #remove os stickers salvos para n ocupar espaço
 	except BadRequest as e:
 		try:
-			os.remove(str(sticker))
-			os.remove(str(sticker.split('.')[0] + '.webp'))
+			os.remove(sticker)
+			os.remove(sticker.split('.')[0] + '.webp')
 		except: pass
 
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>O usuário é administrador e não pode ser banido.</b>', reply_to_message_id=update.message.message_id)
@@ -147,14 +163,9 @@ def check_nude_image(bot, update):
 		js = json.loads(foto) #carregando o json
 		foto = js['file_path'] #conseguindo a fonte da imagem
 
-		r = requests.get(foto, stream=True) #fazendo a requisição para baixar a img
-		foto = foto.split('/')[-1] #dividindo para pegar apenas o nome e a extensão
+		algo_js = algo.pipe(foto).result #passando a fonte na API do algorithmia
 
-		with open(foto, 'wb') as fo:
-			shutil.copyfileobj(r.raw, fo)
-		del r
-
-		if nudity.has(str(foto)) == True: #checando se tem nude ou n com nudepy
+		if algo_js['nude'] == 'true': #checando se tem nude ou n
 			alvo_id = update.message.from_user.id
 			alvo_usuario = update.message.from_user.username
 			alvo_nome = update.message.from_user.first_name
@@ -181,19 +192,19 @@ def check_nude_image(bot, update):
 			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=banido, reply_to_message_id=update.message.message_id)
 			bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
 			bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=banido_usuario)
+
+			del banido_usuario
+			del banido
+			del alvo_id
+			del alvo_usuario
+			del alvo_nome
 		else: pass
 
 		#tentando liberar memória pro bot n explodir
-		del foto
 		del js
-		del banido_usuario
+		del algo_js
 
-		os.remove(str(foto))
 	except BadRequest as e:
-		try:
-			os.remove(str(foto))
-		except: pass
-
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>O usuário é administrador e não pode ser banido.</b>', reply_to_message_id=update.message.message_id)
 		bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
 
@@ -462,7 +473,6 @@ def ajuda(bot, update):
 /ajuda - Envia a lista de comandos para ajuda
 /info - Envia informações sobre o bot
 /link - Envia link do grupo e do canal
-/emailrep - Recolhe informações básicas de um endereço de email
 /s ou /salvar - Envia a mensagem escolhida para o seu pv
 
 <b>Apenas administrador ou moderador</b>
@@ -533,79 +543,6 @@ def salvar(bot, update):
 	bot.forward_message(chat_id=user_id, from_chat_id=update.message.chat_id, message_id=update.message.reply_to_message.message_id)
 	bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>A mensagem foi salva no seu privado.</b>', reply_to_message_id=update.message.message_id)
 
-def emailrep(bot, update, args):
-	#usa a API do emailrep para conseguir a reputação de um e-mail
-
-	r = requests.get('https://emailrep.io/' + args[0])
-	j = json.loads(r.text)
-
-	carregando = '''
-<b>Conseguindo reputação do e-mail </b>{} <b>.</b>
-
-<b>Por favor, aguarde.</b>'''.format(args[0])
-
-	msg = bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=carregando, reply_to_message_id=update.message.message_id)
-
-	####
-
-	emailrep_text = '''
-<b>High</b> - Alta
-<b>Medium</b> - Média
-<b>Low</b> - Baixa
-<b>None</b> - Nenhuma
-
-<b>E-mail: </b>{email}
-<b>Reputação: </b>{rep}
-<b>Suspeitas: </b>{suspicious}
-<b>Referências: </b>{references}
-
-<b>Detalhes: </b>
-	<b>Atividade maliciosa: </b>{activity}
-	<b>Atividade maliciosa recente: </b>{recent_activity}
-	<b>Credenciais vazadas: </b>{credentials}
-	<b>Violação de dados: </b>{data_breach}
-	<b>Visto pela última vez: </b>{last_seen}
-	<b>Existe domínio: </b>{domain_exists}
-	<b>Reputação de domínio: </b>{domain_rep}
-	<b>Domínio novo: </b>{new_domain}
-	<b>Dias desde criação de domínio: </b>{days}
-	<b>TLD suspeito: </b>{suspicious_tld}
-	<b>Spam: </b>{spam}
-	<b>Provedor de graça: </b>{free_prov}
-	<b>Descartável: </b>{disp}
-	<b>MX válido: </b>{valid_mx}
-	<b>Falsificável: </b>{spoofable}
-	<b>SPF estrito: </b>{spf}
-	<b>Dmarc reforçado: </b>{dmarc}
-
-<b>Perfis:</b>
-'''.format(email=args[0],
-		rep=j['reputation'],
-		suspicious=j['suspicious'],
-		references=j['references'],
-			activity=j['details']['malicious_activity'],
-			recent_activity=j['details']['malicious_activity_recent'],
-			credentials=j['details']['credentials_leaked'],
-			data_breach=j['details']['data_breach'],
-			last_seen=j['details']['last_seen'],
-			domain_exists=j['details']['domain_exists'],
-			domain_rep=j['details']['domain_reputation'],
-			new_domain=j['details']['new_domain'],
-			days=j['details']['days_since_domain_creation'],
-			suspicious_tld=j['details']['suspicious_tld'],
-			spam=j['details']['spam'],
-			free_prov=j['details']['free_provider'],
-			disp=j['details']['disposable'],
-			valid_mx=j['details']['valid_mx'],
-			spoofable=j['details']['spoofable'],
-			spf=j['details']['spf_strict'],
-			dmarc=j['details']['dmarc_enforced'])
-
-	for perfil in j['details']['profiles']:
-		emailrep_text += '<code>{}</code>\n'.format(perfil)
-
-	bot.edit_message_text(parse_mode='HTML', chat_id=update.message.chat_id, message_id=msg.message_id, text=emailrep_text)
-
 def main():
 	updater = Updater(token=API_TOKEN)
 	dispatcher = updater.dispatcher
@@ -626,7 +563,6 @@ def main():
 	dispatcher.add_handler(CommandHandler('p', pin))
 	dispatcher.add_handler(CommandHandler('salvar', salvar))
 	dispatcher.add_handler(CommandHandler('s', salvar))
-	dispatcher.add_handler(CommandHandler('emailrep', emailrep, pass_args=True))
 
 	# mensagem de boas vindas
 	dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, bvindas))
