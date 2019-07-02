@@ -22,6 +22,7 @@ import shutil
 from nudity import Nudity
 from PIL import Image
 import Algorithmia
+import psycopg2 #para o postgreSQL
 
 nudity = Nudity()
 
@@ -36,6 +37,20 @@ REG_GROUP = os.getenv('REGISTER')
 
 #MODO = DEV / PROD
 modo = os.getenv('MODO')
+
+#DATABASE URL
+try:
+	DATABASE_URL = os.getenv('DATABASE_URL')
+
+	conn = psycopg2.connect(DATABASE_URL, sslmode='require')
+	cur = conn.cursor()
+
+	cur.execute('CREATE TABLE ids (id int);')
+except (Exception, psycopg2.Error) as e:
+	print('Erro: {}'.format(str(e)))
+	cur.execute('ROLLBACK')
+	conn.commit()
+	print('Dando rollback...')
 
 #ALGORITHMIA NUDITY DETECTION
 ALGORITHMIA_KEY = os.getenv('ALGO_KEY')
@@ -56,6 +71,19 @@ canal = ['https://t.me/AcervoDoSam', '@AcervoDoSam']
 
 permitidos = ['-1001480767444']
 Excecoes = ['']
+
+try:
+	cur.execute('SELECT * FROM ids;')
+	rows = cur.fetchall()
+
+	for row in rows:
+		Excecoes.append(str(row))
+		print('ROW: ' + str(row))
+		print('ROW 0: ' + str(row[0]))
+
+except (Exception, psycopg2.Error) as e:
+	print('Erro: {}'.format(str(e)))
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -93,8 +121,6 @@ def check_adm(user_id, admin_list):
 @run_async
 def check_nude_sticker(bot, update):
 	if check_group(chat_id=update.message.chat_id) == True:
-		
-
 		'''
 		A função check_nude_sticker será a versão 1.0 (sem Algorithmia), pois
 		não é possível fazer a verificação com a extensão .webp.
@@ -122,34 +148,36 @@ def check_nude_sticker(bot, update):
 				alvo_usuario = update.message.from_user.username
 				alvo_nome = update.message.from_user.first_name
 
-				if alvo_usuario == None:
-					banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_nome, alvo_id)
-				else:
-					banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_usuario, alvo_id)
+				if str(alvo_id) not in Excecoes:
+					if alvo_usuario == None:
+						banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_nome, alvo_id)
+					else:
+						banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_usuario, alvo_id)
 
-				banido_usuario = '''
-	#BANIDO_USUARIO
-	<b>Usuário: </b>{user_name} [{user_id}]
-	<b>Grupo: </b>{group_name} [{group_id}]
-	<b>Data: </b>{data}
-	<b>Motivo: </b>{motivo}
-	'''.format(user_name=alvo_usuario,
-				user_id=alvo_id,
-				group_name=update.message.chat.title,
-				group_id=update.message.chat.id,
-				data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'),
-				motivo='Pornografia')
+					banido_usuario = '''
+#BANIDO_USUARIO
+<b>Usuário: </b>{user_name} [<a href="{link}">{user_id}</a>]
+<b>Grupo: </b>{group_name} [{group_id}]
+<b>Data: </b>{data}
+<b>Motivo: </b>{motivo}
+'''.format(user_name=alvo_usuario,
+					user_id=alvo_id,
+					group_name=update.message.chat.title,
+					group_id=update.message.chat.id,
+					data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'),
+					motivo='Pornografia',
+					link='tg://user?id=' + str(alvo_id))
 
-				bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
-				bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=banido, reply_to_message_id=update.message.message_id)
-				bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
-				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=banido_usuario)
+					bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
+					bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=banido, reply_to_message_id=update.message.message_id)
+					bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
+					bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=banido_usuario)
 
-				del banido_usuario
-				del banido
-				del alvo_id
-				del alvo_usuario
-				del alvo_nome
+					del banido_usuario
+					del banido
+					del alvo_id
+					del alvo_usuario
+					del alvo_nome
 			else: pass
 
 			os.remove(sticker) #remove os stickers salvos para n ocupar espaço
@@ -184,34 +212,36 @@ def check_nude_image(bot, update):
 				alvo_usuario = update.message.from_user.username
 				alvo_nome = update.message.from_user.first_name
 
-				if alvo_usuario == None:
-					banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_nome, alvo_id)
-				else:
-					banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_usuario, alvo_id)
+				if str(alvo_id) not in Excecoes:
+					if alvo_usuario == None:
+						banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_nome, alvo_id)
+					else:
+						banido = '<b>Usuário {} - {} banido por envio de pornografia.</b>'.format(alvo_usuario, alvo_id)
 
-				banido_usuario = '''
+					banido_usuario = '''
 #BANIDO_USUARIO
-<b>Usuário: </b>{user_name} [{user_id}]
+<b>Usuário: </b>{user_name} [<a href="{link}">{user_id}</a>]
 <b>Grupo: </b>{group_name} [{group_id}]
 <b>Data: </b>{data}
 <b>Motivo: </b>{motivo}
 '''.format(user_name=alvo_usuario,
-				user_id=alvo_id,
-				group_name=update.message.chat.title,
-				group_id=update.message.chat.id,
-				data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'),
-				motivo='Pornografia')
+					user_id=alvo_id,
+					group_name=update.message.chat.title,
+					group_id=update.message.chat.id,
+					data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'),
+					motivo='Pornografia',
+					link='tg://user?id=' + str(alvo_id))
 
-				bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
-				bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=banido, reply_to_message_id=update.message.message_id)
-				bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
-				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=banido_usuario)
+					bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
+					bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=banido, reply_to_message_id=update.message.message_id)
+					bot.delete_message(chat_id=update.message.chat_id, message_id=update.message.message_id)
+					bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=banido_usuario)
 
-				del banido_usuario
-				del banido
-				del alvo_id
-				del alvo_usuario
-				del alvo_nome
+					del banido_usuario
+					del banido
+					del alvo_id
+					del alvo_usuario
+					del alvo_nome
 			else: pass
 
 			#tentando liberar memória pro bot n explodir
@@ -231,27 +261,29 @@ def saida(bot, update):
 			if m.is_bot == True:
 				bot_out = '''
 #SAIDA_BOT
-<b>De:</b> {bot_name} [{bot_id}]
+<b>De:</b> {bot_name} [<a href="{link}">{bot_id}</a>]
 <b>Grupo:</b> {group_name} [{group_id}]
 <b>Data:</b> {data}
 '''.format(bot_name=m.full_name,
 			bot_id=m.id,
 			group_name=update.message.chat.title,
 			group_id=update.message.chat.id,
-			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'))
+			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'),
+			link='tg://user?id=' + str(m.id))
 
 				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_out)
 			else:
 				user_out = '''
 #SAIDA_USUARIO
-<b>De:</b> {user_name} [{user_id}]
+<b>De:</b> {user_name} [<a href="{link}">{user_id}</a>]
 <b>Grupo:</b> {group_name} [{group_id}]
 <b>Data:</b> {data}
 '''.format(user_name=m.full_name,
 				user_id=m.id,
 				group_name=update.message.chat.title,
 				group_id=update.message.chat.id,
-				data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'))
+				data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'),
+							link='tg://user?id=' + str(m.id))
 
 				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=user_out)
 
@@ -271,14 +303,15 @@ def bvindas(bot, update):
 
 					bot_entry = '''
 #ENTRADA_BOT
-<b>De:</b> {bot_name} [{bot_id}]
+<b>De:</b> {bot_name} [<a href="{link}">{bot_id}</a>]
 <b>Grupo:</b> {group_name} [{group_id}]
 <b>Data:</b> {data}
 '''.format(bot_name=m.full_name,
 			bot_id=m.id,
 			group_name=update.message.chat.title,
 			group_id=update.message.chat.id,
-			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'))
+			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'),
+						link='tg://user?id=' + str(m.id))
 
 					bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_entry)
 				else: pass
@@ -288,14 +321,15 @@ def bvindas(bot, update):
 
 				user_entry = '''
 #ENTRADA_USUARIO
-<b>De:</b> {user_name} [{user_id}]
+<b>De:</b> {user_name} [<a href="{link}">{user_id}</a>]
 <b>Grupo:</b> {group_name} [{group_id}]
 <b>Data:</b> {data}
 '''.format(user_name=m.full_name,
 			user_id=m.id,
 			group_name=update.message.chat.title,
 			group_id=update.message.chat.id,
-			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'))
+			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'),
+						link='tg://user?id=' + str(m.id))
 
 				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=user_entry)
 
@@ -356,8 +390,20 @@ def excecoes(bot, update, args):
 	user_id = update.message.from_user.id
 
 	if check_adm(user_id=user_id, admin_list=admin_list) == True:
-		Excecoes.append(args[0])
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Bot {} agora é uma exceção e pode ser adicionado ao grupo.</b>'.format(args[0]), reply_to_message_id=update.message.message_id)
+		try:
+			cur.execute('SELECT * FROM ids;')
+			rows = cur.fetchall()
+
+			for row in rows:
+				if row == args[0]:
+					bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>O ID {} já é uma exceção.</b>'.format(args[0]), reply_to_message_id=update.message.message_id)
+				else:
+					cur.execute('INSERT INTO ids (id) VALUES ({id});'.format(id=args[0]))
+					conn.commit()
+
+					bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>O ID {} agora é uma exceção e pode ser adicionado ao grupo.</b>'.format(args[0]), reply_to_message_id=update.message.message_id)
+		except Exception as e:
+			print('Erro: ' + str(e))
 	else:
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
 
