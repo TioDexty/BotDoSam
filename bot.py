@@ -22,7 +22,6 @@ import shutil
 from nudity import Nudity
 from PIL import Image
 import Algorithmia
-import psycopg2 #para o postgreSQL
 
 nudity = Nudity()
 
@@ -37,20 +36,6 @@ REG_GROUP = os.getenv('REGISTER')
 
 #MODO = DEV / PROD
 modo = os.getenv('MODO')
-
-#DATABASE URL
-try:
-	DATABASE_URL = os.getenv('DATABASE_URL')
-
-	conn = psycopg2.connect(DATABASE_URL, sslmode='require')
-	cur = conn.cursor()
-
-	cur.execute('CREATE TABLE ids (id int);')
-except (Exception, psycopg2.Error) as e:
-	print('Erro: {}'.format(str(e)))
-	cur.execute('ROLLBACK')
-	conn.commit()
-	print('Dando rollback...')
 
 #ALGORITHMIA NUDITY DETECTION
 ALGORITHMIA_KEY = os.getenv('ALGO_KEY')
@@ -72,18 +57,9 @@ canal = ['https://t.me/AcervoDoSam', '@AcervoDoSam']
 permitidos = ['-1001480767444']
 Excecoes = ['']
 
-try:
-	cur.execute('SELECT * FROM ids;')
-	rows = cur.fetchall()
-
-	for row in rows:
-		Excecoes.append(str(row))
-		print('ROW: ' + str(row))
-		print('ROW 0: ' + str(row[0]))
-
-except (Exception, psycopg2.Error) as e:
-	print('Erro: {}'.format(str(e)))
-
+ids = open('ids.txt', 'r')
+for i in ids:
+	Excecoes.append(str(i))
 
 logging.basicConfig(level=logging.INFO)
 
@@ -391,17 +367,16 @@ def excecoes(bot, update, args):
 
 	if check_adm(user_id=user_id, admin_list=admin_list) == True:
 		try:
-			cur.execute('SELECT * FROM ids;')
-			rows = cur.fetchall()
+			ids_txt = open('ids.txt', 'r+').readlines()
 
-			for row in rows:
-				if row == args[0]:
+			for tg_id in ids_txt:
+				if str(tg_id) == str(args[0]):
 					bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>O ID {} já é uma exceção.</b>'.format(args[0]), reply_to_message_id=update.message.message_id)
 				else:
-					cur.execute('INSERT INTO ids (id) VALUES ({id});'.format(id=args[0]))
-					conn.commit()
-
+					ids_txt.write('\n' + str(args[0]))
 					bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>O ID {} agora é uma exceção e pode ser adicionado ao grupo.</b>'.format(args[0]), reply_to_message_id=update.message.message_id)
+		
+			ids_txt.close()
 		except Exception as e:
 			print('Erro: ' + str(e))
 	else:
