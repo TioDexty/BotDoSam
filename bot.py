@@ -265,7 +265,7 @@ def bvindas(bot, update):
 				m.full_name = m.username
 
 			if m.is_bot == True:
-				if alvo_id not in Excecoes:
+				if str(alvo_id) not in Excecoes:
 					bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
 					bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Bot {} removido.</b>'.format(alvo_id))
 
@@ -350,6 +350,16 @@ def gp(bot, update):
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=msg, reply_to_message_id=update.message.message_id)
 	else:
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=str(update.message.chat_id), reply_to_message_id=update.message.message_id)
+
+def excecoes(bot, update, args):
+	admin_list = bot.get_chat_administrators(chat_id=update.message.chat_id)
+	user_id = update.message.from_user.id
+
+	if check_adm(user_id=user_id, admin_list=admin_list) == True:
+		Excecoes.append(args[0])
+		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Bot {} agora é uma exceção e pode ser adicionado ao grupo.</b>'.format(args[0]), reply_to_message_id=update.message.message_id)
+	else:
+		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
 
 def honeypot(bot, update, args):
 	if check_group(chat_id=update.message.chat_id) == True:
@@ -500,12 +510,15 @@ def ajuda(bot, update):
 /info - Envia informações sobre o bot
 /link - Envia link do grupo e do canal
 /s ou /salvar - Envia a mensagem escolhida para o seu pv
+/rk ou /requestkick - Pede expulsão de um usuário
+/rb ou /requestban - Pede banimento de um usuário
 
 <b>Apenas administrador ou moderador</b>
 /k ou /kick - Remove o usuário alvo do grupo
 /b ou /ban - Bane o usuário alvo do grupo
 /p ou /pin - Fixa uma mensagem escolhida
 /unban <b>ID</>/<b>mensagem do banido</b> - Desbane um usuário
+/exc <b>ID</b> - Adiciona ID de um bot como exceção
 """
 
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=ajuda, reply_to_message_id=update.message.message_id)
@@ -581,6 +594,78 @@ def banir(bot, update):
 		else:
 			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
 
+def pedir_ban(bot, update):
+	if check_group(chat_id=update.message.chat_id) == True:
+		#pedir ban do alvo
+		pedinte = update.message.from_user
+		baninte = update.message.reply_to_message.from_user
+
+		mensagem = '''
+<b>O usuário {a} está pedindo banimento do usuário {b}.</b>
+
+<b>Mais informações</b>
+<b>ID: </b>{a_id}
+<b>Nome: </b>{a_full_name}
+<b>Nome de usuário: </b>{a_username}
+
+<b>Usuário a ser banido</b>
+<b>ID: </b>{b_id}
+<b>Nome: </b>{b_full_name}
+<b>Nome de usuário: </b>{b_username}
+
+<a href="{link}">Link para a mensagem</a>
+'''.format(a=pedinte.full_name,
+		b=baninte.full_name,
+		a_id=pedinte.id,
+		a_full_name=pedinte.full_name,
+		a_username=pedinte.username,
+
+		b_id=baninte.id,
+		b_full_name=baninte.full_name,
+		b_username=baninte.username,
+		link=update.message.link)
+
+		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Chamando os administradores, aguarde.</b>', reply_to_message_id=update.message.message_id)
+
+		for admin in bot.get_chat_administrators(chat_id=update.message.chat_id):
+			bot.send_message(parse_mode='HTML', chat_id=admin.user.id, text=mensagem)
+
+def pedir_kick(bot, update):
+	if check_group(chat_id=update.message.chat_id) == True:
+		#pedir ban do alvo
+		pedinte = update.message.from_user
+		kickinte = update.message.reply_to_message.from_user
+
+		mensagem = '''
+<b>O usuário {a} está pedindo expulsão do usuário {b}.</b>
+
+<b>Mais informações</b>
+<b>ID: </b>{a_id}
+<b>Nome: </b>{a_full_name}
+<b>Nome de usuário: </b>{a_username}
+
+<b>Usuário a ser banido</b>
+<b>ID: </b>{b_id}
+<b>Nome: </b>{b_full_name}
+<b>Nome de usuário: </b>{b_username}
+
+<a href="{link}">Link para a mensagem</a>
+'''.format(a=pedinte.full_name,
+		b=kickinte.full_name,
+		a_id=pedinte.id,
+		a_full_name=pedinte.full_name,
+		a_username=pedinte.username,
+
+		b_id=kickinte.id,
+		b_full_name=kickinte.full_name,
+		b_username=kickinte.username,
+		link=update.message.link)
+
+		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Chamando os administradores, aguarde.</b>', reply_to_message_id=update.message.message_id)
+
+		for admin in bot.get_chat_administrators(chat_id=update.message.chat_id):
+			bot.send_message(parse_mode='HTML', chat_id=admin.user.id, text=mensagem)
+
 def pin(bot, update):
 	if check_group(chat_id=update.message.chat_id) == True:
 		#fixar mensagem
@@ -623,6 +708,11 @@ def main():
 	dispatcher.add_handler(CommandHandler('salvar', salvar))
 	dispatcher.add_handler(CommandHandler('s', salvar))
 	dispatcher.add_handler(CommandHandler('unban', desbanir))
+	dispatcher.add_handler(CommandHandler('requestban', pedir_ban))
+	dispatcher.add_handler(CommandHandler('rb', pedir_ban))
+	dispatcher.add_handler(CommandHandler('requestkick', pedir_kick))
+	dispatcher.add_handler(CommandHandler('rk', pedir_kick))
+	dispatcher.add_handler(CommandHandler('exc', excecoes, pass_args=True))
 
 	# mensagem de boas vindas
 	dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, bvindas))
