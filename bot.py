@@ -393,6 +393,8 @@ def ajuda(bot, update):
 /p ou /pin - Fixa uma mensagem escolhida
 /unban <b>ID</>/<b>mensagem do banido</b> - Desbane um usuário
 /exc <b>ID</b> - Adiciona ID de um bot como exceção
+/m ou /mute - Deixa o usuário mudo, incapaz de mandar mensagens
+/unmute - Permite que o usuário fale
 """
 
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=ajuda, reply_to_message_id=update.message.message_id)
@@ -465,6 +467,48 @@ def banir(bot, update):
 
 			bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
 			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=banido, reply_to_message_id=update.message.message_id)
+		else:
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
+
+def mute(bot, update):
+	if check_group(chat_id=update.message.chat_id) == True:
+		#mutar usuario
+		admin_list = bot.get_chat_administrators(chat_id=update.message.chat_id)
+		user_id = update.message.from_user.id
+
+		if check_adm(user_id=user_id, admin_list=admin_list) == True:
+			alvo_id = update.message.reply_to_message.from_user.id
+			alvo_usuario = update.message.reply_to_message.from_user.username
+			alvo_nome = update.message.reply_to_message.from_user.first_name
+
+			if alvo_usuario == None:
+				mudo = '<b>Usuário {} - {} agora está mudo.</b>'.format(alvo_nome, alvo_id)
+			else:
+				mudo = '<b>Usuário {} - {} agora está mudo.</b>'.format(alvo_usuario, alvo_id)
+
+			bot.restrict_chat_member(chat_id=update.message.chat_id, user_id=alvo_id, can_send_messages=False, can_send_media_messages=False, can_send_other_messages=False, can_add_web_page_previews=False)
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=mudo, reply_to_message_id=update.message.message_id)
+		else:
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
+
+def unmute(bot, update):
+	if check_group(chat_id=update.message.chat_id) == True:
+		#mutar usuario
+		admin_list = bot.get_chat_administrators(chat_id=update.message.chat_id)
+		user_id = update.message.from_user.id
+
+		if check_adm(user_id=user_id, admin_list=admin_list) == True:
+			alvo_id = update.message.reply_to_message.from_user.id
+			alvo_usuario = update.message.reply_to_message.from_user.username
+			alvo_nome = update.message.reply_to_message.from_user.first_name
+
+			if alvo_usuario == None:
+				mudo = '<b>Usuário {} - {} não está mais mudo.</b>'.format(alvo_nome, alvo_id)
+			else:
+				mudo = '<b>Usuário {} - {} não está mais mudo.</b>'.format(alvo_usuario, alvo_id)
+
+			bot.restrict_chat_member(chat_id=update.message.chat_id, user_id=alvo_id, can_send_messages=True, can_send_media_messages=True, can_send_other_messages=True, can_add_web_page_previews=True)
+			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=mudo, reply_to_message_id=update.message.message_id)
 		else:
 			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Você não é administrador para usar este comando.</b>', reply_to_message_id=update.message.message_id)
 
@@ -587,6 +631,9 @@ def main():
 	dispatcher.add_handler(CommandHandler('requestkick', pedir_kick))
 	dispatcher.add_handler(CommandHandler('rk', pedir_kick))
 	dispatcher.add_handler(CommandHandler('exc', excecoes, pass_args=True))
+	dispatcher.add_handler(CommandHandler('mute', mute))
+	dispatcher.add_handler(CommandHandler('m', mute))
+	dispatcher.add_handler(CommandHandler('unmute', unmute))
 
 	# mensagem de boas vindas
 	dispatcher.add_handler(MessageHandler(Filters.status_update.new_chat_members, bvindas))
