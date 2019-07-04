@@ -18,6 +18,7 @@ import re
 import datetime
 import socket
 from pytz import timezone
+import unicodedata as ud
 
 #BOT TOKEN
 API_TOKEN = os.getenv('TOKEN')
@@ -77,6 +78,26 @@ def check_adm(user_id, admin_list):
 			return True
 	return False
 
+def check_arabe(nome):
+	for l in nome:
+		try:
+			enc = ud.name(l).lower()
+			if 'arabic' in enc or 'persian' in enc:
+				return True
+		except Exception:
+			pass
+	return False
+
+def check_indiano(nome):
+	for l in nome:
+		try:
+			enc = ud.name(l).lower()
+			if 'devanagari' in enc:
+				return True
+		except Exception:
+			pass
+	return False
+
 @run_async
 def saida(bot, update):
 	if check_group(chat_id=update.message.chat_id) == True:
@@ -109,7 +130,7 @@ def saida(bot, update):
 				group_name=update.message.chat.title,
 				group_id=update.message.chat.id,
 				data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'),
-							link='tg://user?id=' + str(m.id))
+				link='tg://user?id=' + str(m.id))
 
 				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=user_out)
 
@@ -138,10 +159,52 @@ def bvindas(bot, update):
 			group_name=update.message.chat.title,
 			group_id=update.message.chat.id,
 			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'),
-						link='tg://user?id=' + str(m.id))
+			link='tg://user?id=' + str(m.id))
 
 					bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_entry)
 				else: pass
+			elif check_arabe(m.full_name) == True or check_arabe(m.user_name) == True:
+				if str(alvo_id) not in ids_txt.readlines():
+					bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
+					bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Árabe {} banido.</b>'.format(m.full_name))
+
+					bot_entry = '''
+#ENTRADA_ARABE
+<b>De:</b> {bot_name} [<a href="{link}">{bot_id}</a>]
+<b>Grupo:</b> {group_name} [{group_id}]
+<b>Data:</b> {data}
+<b>Situação:</b> {situacao}
+'''.format(bot_name=m.full_name,
+			bot_id=m.id,
+			group_name=update.message.chat.title,
+			group_id=update.message.chat.id,
+			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'),
+			link='tg://user?id=' + str(m.id),
+			situacao='banido por ser árabe')
+
+					bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_entry)
+
+			elif check_indiano(m.full_name) == True or check_indiano(m.user_name) == True:
+				if str(alvo_id) not in ids_txt.readlines():
+					bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
+					bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Indiano {} banido.</b>'.format(m.full_name))
+
+					bot_entry = '''
+#ENTRADA_INDIANO
+<b>De:</b> {bot_name} [<a href="{link}">{bot_id}</a>]
+<b>Grupo:</b> {group_name} [{group_id}]
+<b>Data:</b> {data}
+<b>Situação:</b> {situacao}
+'''.format(bot_name=m.full_name,
+			bot_id=m.id,
+			group_name=update.message.chat.title,
+			group_id=update.message.chat.id,
+			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'),
+			link='tg://user?id=' + str(m.id),
+			situacao='banido por ser indiano')
+
+					bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_entry)
+
 			else:
 				boasvindas = '<b>Olá, {}. Bem-vindo(a) ao {}.</b>'.format(m.full_name, update.message.chat.title)
 				bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=boasvindas)
@@ -156,7 +219,7 @@ def bvindas(bot, update):
 			group_name=update.message.chat.title,
 			group_id=update.message.chat.id,
 			data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y'),
-						link='tg://user?id=' + str(m.id))
+			link='tg://user?id=' + str(m.id))
 
 				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=user_entry)
 
