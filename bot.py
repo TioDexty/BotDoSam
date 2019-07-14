@@ -2,7 +2,7 @@
 #!/usr/bin/python3.7
 #Bot do Sam
 #@AcervoDoSam
-#@GrupoDoSam
+#grupo ta privado agora
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram.ext.dispatcher import run_async
@@ -433,6 +433,7 @@ def regras(bot, update):
 <b>8.</b> Não espere atenção 24/7 do administrador ou moderador;
 <b>9.</b> Proibido qualquer tipo de preconceito, exceto com fstring em python; e
 <b>10.</b> Não envie links suspeitos nem links de grupos/canais do Telegram, apenas com autorização de um administrador.
+<b>11.</b> Não peça cartões clonados, bins, checkers etc.
 """
 		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=regras, reply_to_message_id=update.message.message_id)
 
