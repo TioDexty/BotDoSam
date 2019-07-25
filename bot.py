@@ -2,7 +2,7 @@
 #!/usr/bin/python3.7
 #Bot do Sam
 #@AcervoDoSam
-#grupo ta privado agora
+#@GrupoDoSam
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 from telegram.ext.dispatcher import run_async
@@ -163,7 +163,7 @@ def bvindas(bot, update):
 
 					bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_entry)
 				else: pass
-			elif check_arabe(m.full_name) == True or check_arabe(m.user_name) == True:
+			elif check_arabe(m.full_name) == True or check_arabe(m.username) == True:
 				if str(alvo_id) not in ids_txt.readlines():
 					bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
 					bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Árabe {} banido.</b>'.format(m.full_name))
@@ -184,7 +184,7 @@ def bvindas(bot, update):
 
 					bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_entry)
 
-			elif check_indiano(m.full_name) == True or check_indiano(m.user_name) == True:
+			elif check_indiano(m.full_name) == True or check_indiano(m.username) == True:
 				if str(alvo_id) not in ids_txt.readlines():
 					bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
 					bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Indiano {} banido.</b>'.format(m.full_name))
