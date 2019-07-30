@@ -142,7 +142,10 @@ def bvindas(bot, update):
 			alvo_id = m.id
 
 			if m.full_name == None or m.first_name == None:
-				m.full_name = m.username
+				if m.username != None:
+					m.full_name = m.username
+				else:
+					bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
 
 			if m.is_bot == True:
 				if str(alvo_id) not in ids_txt.readlines():
@@ -163,7 +166,7 @@ def bvindas(bot, update):
 
 					bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_entry)
 				else: pass
-			elif check_arabe(m.full_name) == True or check_arabe(m.username) == True:
+			elif check_arabe(m.full_name):
 				if str(alvo_id) not in ids_txt.readlines():
 					bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
 					bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Árabe {} banido.</b>'.format(m.full_name))
@@ -184,7 +187,7 @@ def bvindas(bot, update):
 
 					bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_entry)
 
-			elif check_indiano(m.full_name) == True or check_indiano(m.username) == True:
+			elif check_indiano(m.full_name):
 				if str(alvo_id) not in ids_txt.readlines():
 					bot.kick_chat_member(chat_id=update.message.chat_id, user_id=alvo_id)
 					bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='<b>Indiano {} banido.</b>'.format(m.full_name))
