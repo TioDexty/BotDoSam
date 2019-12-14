@@ -178,7 +178,7 @@ def bvindas(bot, update):
 				data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y')
 				user_entry = f'''
 #ENTRADA_USUARIO
-<b>De:</b> {m.full_name} [<a href="tg://user?id={str(m.id))}">{m.id}</a>]
+<b>De:</b> {m.full_name} [<a href="tg://user?id={str(m.id)}">{m.id}</a>]
 <b>Grupo:</b> {update.message.chat.title} [{update.message.chat.id}]
 <b>Data:</b> {data}
 '''
@@ -329,7 +329,7 @@ def ajuda(bot, update):
 	if check_group(chat_id=update.message.chat_id) == True:
 		ajuda = """
 /ip <b>IP</b> - Mostra informações sobre o endereço IP
-/leis - Envia a lista de regras do grupo
+/leis - Envia a lista de leis do grupo
 /gp - Envia informações atuais do grupo
 /ajuda - Envia a lista de comandos para ajuda
 /info - Envia informações sobre o bot
@@ -441,7 +441,7 @@ def main():
 	updater = Updater(token=API_TOKEN)
 	dispatcher = updater.dispatcher
 
-	dispatcher.add_handler(CommandHandler('regras', regras))
+	dispatcher.add_handler(CommandHandler('leis', regras))
 	dispatcher.add_handler(CommandHandler('ip', ip, pass_args=True))
 	dispatcher.add_handler(CommandHandler('link', link))
 	dispatcher.add_handler(CommandHandler('gp', gp))
