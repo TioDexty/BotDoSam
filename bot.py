@@ -173,7 +173,7 @@ def bvindas(bot, update):
 					bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=bot_entry)
 
 			else:
-				boasvindas = '<b>Olá, {m.full_name}. Bem-vindo(a) ao {update.message.chat.title}.</b>'
+				boasvindas = f'<b>Olá, {m.full_name}. Bem-vindo(a) ao {update.message.chat.title}.</b>'
 				bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=boasvindas)
 				data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y')
 				user_entry = f'''
