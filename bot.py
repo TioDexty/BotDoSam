@@ -174,6 +174,7 @@ def bvindas(bot, update):
 
 			else:
 				boasvindas = f'<b>Olá, {m.full_name}. Bem-vindo(a) ao {update.message.chat.title}.</b>'
+				bot.restrict_chat_member(chat_id=update.message.chat_id, user_id=m.id, can_send_messages=True, can_send_media_messages=False, can_send_other_messages=False, can_add_web_page_previews=False)
 				bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=boasvindas)
 				data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y')
 				user_entry = f'''
@@ -182,7 +183,6 @@ def bvindas(bot, update):
 <b>Grupo:</b> {update.message.chat.title} [{update.message.chat.id}]
 <b>Data:</b> {data}
 '''
-
 				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=user_entry)
 
 def info(bot, update):
@@ -307,9 +307,9 @@ Voltarei com os resultados assim que possível."""
 		except IndexError:
 			bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text='/ip <b>IP</b>/<b>DOMÍNIO</b> para obter informações sobre o endereço.', reply_to_message_id=update.message.message_id)
 
-def regras(bot, update):
+def leis(bot, update):
 	if check_group(chat_id=update.message.chat_id) == True:
-		regras = """
+		leis = """
 <b>Leis:</b>
 
 <b>1.</b> Não envie ou peça qualquer tipo de pornografia;
@@ -323,7 +323,7 @@ def regras(bot, update):
 <b>9.</b> Não envie links suspeitos nem links de grupos/canais do Telegram, apenas com autorização de um administrador; e
 <b>10.</b> Não peça cartões clonados, bins, checkers etc.
 """
-		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=regras, reply_to_message_id=update.message.message_id)
+		bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=leis, reply_to_message_id=update.message.message_id)
 
 def ajuda(bot, update):
 	if check_group(chat_id=update.message.chat_id) == True:
@@ -352,7 +352,7 @@ def expulsar(bot, update):
 	if check_group(chat_id=update.message.chat_id) == True:
 		#expulsar alvo do grupo
 		if check_adm(user_id=update.message.from_user.id, admin_list=bot.get_chat_administrators(chat_id=update.message.chat_id)) == True:
-			if alvo_usuario == None:
+			if update.message.reply_to_message.from_user.username == None:
 				expulso = f'<b>Usuário {update.message.reply_to_message.from_user.first_name} - {update.message.reply_to_message.from_user.id} removido.</b>'
 			else:
 				expulso = f'<b>Usuário {update.message.reply_to_message.from_user.username} - {update.message.reply_to_message.from_user.id} removido.</b>'
@@ -384,7 +384,7 @@ def banir(bot, update):
 	if check_group(chat_id=update.message.chat_id) == True:
 		#banir alvo do grupo
 		if check_adm(user_id=update.message.from_user.id, admin_list=bot.get_chat_administrators(chat_id=update.message.chat_id)) == True:
-			if alvo_usuario == None:
+			if update.message.reply_to_message.from_user.username == None:
 				banido = f'<b>Usuário {update.message.reply_to_message.from_user.first_name} - {update.message.reply_to_message.from_user.id} banido.</b>'
 			else:
 				banido = f'<b>Usuário {update.message.reply_to_message.from_user.username} - {update.message.reply_to_message.from_user.id} banido.</b>'
@@ -398,7 +398,7 @@ def mute(bot, update):
 	if check_group(chat_id=update.message.chat_id) == True:
 		#mutar usuario
 		if check_adm(user_id=update.message.from_user.id, admin_list=bot.get_chat_administrators(chat_id=update.message.chat_id)) == True:
-			if alvo_usuario == None:
+			if update.message.reply_to_message.from_user.username == None:
 				mudo = f'<b>Usuário {update.message.reply_to_message.from_user.first_name} - {update.message.reply_to_message.from_user.id} agora está mudo.</b>'
 			else:
 				mudo = f'<b>Usuário {pdate.message.reply_to_message.from_user.username} - {update.message.reply_to_message.from_user.id} agora está mudo.</b>'
@@ -412,7 +412,7 @@ def unmute(bot, update):
 	if check_group(chat_id=update.message.chat_id) == True:
 		#mutar usuario
 		if check_adm(user_id=update.message.from_user.id, admin_list=bot.get_chat_administrators(chat_id=update.message.chat_id)) == True:
-			if alvo_usuario == None:
+			if update.message.reply_to_message.from_user.username == None:
 				mudo = f'<b>Usuário {update.message.reply_to_message.from_user.first_name} - {update.message.reply_to_message.from_user.id} não está mais mudo.</b>'
 			else:
 				mudo = f'<b>Usuário {update.message.reply_to_message.from_user.username} - {update.message.reply_to_message.from_user.id} não está mais mudo.</b>'
@@ -441,7 +441,7 @@ def main():
 	updater = Updater(token=API_TOKEN)
 	dispatcher = updater.dispatcher
 
-	dispatcher.add_handler(CommandHandler('leis', regras))
+	dispatcher.add_handler(CommandHandler('leis', leis))
 	dispatcher.add_handler(CommandHandler('ip', ip, pass_args=True))
 	dispatcher.add_handler(CommandHandler('link', link))
 	dispatcher.add_handler(CommandHandler('gp', gp))
