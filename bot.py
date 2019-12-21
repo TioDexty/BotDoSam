@@ -174,7 +174,7 @@ def bvindas(bot, update):
 
 			else:
 				boasvindas = f'<b>Olá, {m.full_name}. Bem-vindo(a) ao {update.message.chat.title}.</b>'
-				bot.restrict_chat_member(chat_id=update.message.chat_id, user_id=m.id, can_send_messages=True, can_send_media_messages=False, can_send_other_messages=False, can_add_web_page_previews=False)
+				bot.restrict_chat_member(chat_id=update.message.chat_id, user_id=m.id, can_send_messages=True, can_send_media_messages=False, can_send_other_messages=False, can_add_web_page_previews=False, can_send_polls=False, can_invite_users=False)
 				bot.send_message(parse_mode='HTML', chat_id=update.message.chat_id, text=boasvindas)
 				data=datetime.datetime.now(timezone('America/Sao_Paulo')).strftime('%H:%M %d %B, %Y')
 				user_entry = f'''
@@ -182,6 +182,7 @@ def bvindas(bot, update):
 <b>De:</b> {m.full_name} [<a href="tg://user?id={str(m.id)}">{m.id}</a>]
 <b>Grupo:</b> {update.message.chat.title} [{update.message.chat.id}]
 <b>Data:</b> {data}
+<b>Situação: mudo</b>
 '''
 				bot.send_message(parse_mode='HTML', chat_id=REG_GROUP, text=user_entry)
 
