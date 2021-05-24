@@ -1,0 +1,21 @@
+{
+   " nome " : " TESTE " ,
+   " descrição " : " TESTE " ,
+   " repositório " : "TESTE " 
+   " logo " : " TESTE" ,
+   " palavras-chave " : [
+      " telegram " ,
+      " códigos " ,
+      " grupo "
+   ],
+   " env " : {
+      " TOKEN " : {
+         " descrição " : " TELEGRAM BOT TOKEN " ,
+         " valor " : " 55555555555 "
+      },
+      " WEBHOOK " : {
+      " descrição " : " URL do APP HEROKU " ,
+      " valor " : " https://yourappname.herokuapp.com "
+    }
+   }
+}
