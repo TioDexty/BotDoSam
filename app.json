@@ -9,13 +9,9 @@
       " grupo "
    ],
    " env " : {
-      " TOKEN " : {
+      " API_TOKEN " : {
          " descrição " : " TELEGRAM BOT TOKEN " ,
          " valor " : " 55555555555 "
-      },
-      " WEBHOOK " : {
-      " descrição " : " URL do APP HEROKU " ,
-      " valor " : " https://yourappname.herokuapp.com "
-    }
+       }
    }
 }
