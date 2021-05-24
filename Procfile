@@ -1,1 +1,1 @@
-web: python bot.cpython-37.pyc
+web: python bot.py
